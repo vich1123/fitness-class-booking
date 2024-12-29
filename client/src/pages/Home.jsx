@@ -1,5 +1,5 @@
-import React from 'react';
-import TrainerCard from '../components/TrainerCard';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   return (
@@ -10,10 +10,17 @@ const Home = () => {
       </header>
       <main className="container mx-auto py-8">
         <h2 className="text-2xl font-bold mb-4">Top Trainers</h2>
-        <div className="grid grid-cols-3 gap-4">
-          <TrainerCard name="John Doe" expertise="Yoga" />
-          <TrainerCard name="Jane Smith" expertise="Cardio" />
-          <TrainerCard name="Emily Johnson" expertise="Strength Training" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-white shadow-lg p-4 rounded-md border">
+            <h2 className="text-xl font-bold">John Doe</h2>
+            <p className="text-gray-600">Yoga Expert</p>
+            <Link
+              to="/trainers"
+              className="text-blue-500 hover:underline mt-2 block"
+            >
+              View Profile
+            </Link>
+          </div>
         </div>
       </main>
     </div>

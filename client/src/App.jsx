@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Classes from './pages/Classes';
+import BookClass from './pages/BookClass';
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/classes" element={<Classes />} />
+            <Route path="/book-class" element={<BookClass />} />
           </Routes>
         </main>
       </Router>
