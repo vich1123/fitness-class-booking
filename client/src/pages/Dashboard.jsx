@@ -1,23 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from 'react';
+import { fetchRecommendations, fetchNotifications } from '../utils/api';
 
 const Dashboard = () => {
-  const userData = {
-    name: "John Doe",
-    email: "johndoe@example.com",
-    bookings: ["Yoga", "Cardio"],
-  };
+  const [recommendedClasses, setRecommendedClasses] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const interests = ["Yoga", "Strength Training"]; // Replace with actual user interests
+        const recommendations = await fetchRecommendations(interests);
+        setRecommendedClasses(recommendations);
+      } catch (error) {
+        console.error('Error fetching recommended classes:', error);
+      }
+
+      try {
+        const userId = "USER_ID_HERE"; // Replace with actual user ID
+        const notificationsData = await fetchNotifications(userId);
+        setNotifications(notificationsData);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      <p>Welcome, {userData.name}</p>
-      <p>Email: {userData.email}</p>
-      <h2 className="text-xl font-semibold mt-4">Your Bookings:</h2>
-      <ul className="list-disc pl-6">
-        {userData.bookings.map((booking, index) => (
-          <li key={index}>{booking}</li>
-        ))}
-      </ul>
+    <div>
+      <h2>Recommended Classes</h2>
+      {recommendedClasses.length > 0 ? (
+        recommendedClasses.map((classItem) => (
+          <div key={classItem.id}>
+            <p>{classItem.name} - {classItem.schedule}</p>
+          </div>
+        ))
+      ) : (
+        <p>No recommendations available.</p>
+      )}
+
+      <h2>Notifications</h2>
+      {notifications.length > 0 ? (
+        notifications.map((notification) => (
+          <div key={notification.id}>
+            <p>{notification.message}</p>
+          </div>
+        ))
+      ) : (
+        <p>No new notifications.</p>
+      )}
     </div>
   );
 };

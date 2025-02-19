@@ -1,18 +1,28 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-// Login route
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  // Add authentication logic here
-  res.json({ message: `User logged in with email: ${email}` });
+// Example authentication routes (you can adjust these to fit your actual logic)
+
+// Route to handle user login
+router.post('/login', async (req, res) => {
+  try {
+    // Add your login logic here
+    res.json({ message: 'Login successful' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error logging in', error: err });
+  }
 });
 
-// Registration route
-router.post('/register', (req, res) => {
-  const { name, email, password } = req.body;
-  // Add registration logic here
-  res.json({ message: `User registered with email: ${email}` });
+// Route to handle user registration
+router.post('/register', async (req, res) => {
+  try {
+    // Add your registration logic here
+    res.json({ message: 'Registration successful' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error registering', error: err });
+  }
 });
 
-module.exports = router;
+// Any other authentication routes you have (e.g., password reset, etc.)
+
+export default router; // Export the router correctly as default

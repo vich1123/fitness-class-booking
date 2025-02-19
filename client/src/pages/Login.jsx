@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from '../utils/api';
+import API from '../utils/api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -8,12 +8,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/auth/login', { email, password });
-      alert('Login successful!');
+      const response = await API.post('/auth/login', { email, password });
       localStorage.setItem('token', response.data.token);
+      alert('Login successful!');
+      window.location.href = '/dashboard'; // Redirect to dashboard
     } catch (error) {
-      console.error(error.response.data.message);
-      alert('Login failed. Please check your credentials and try again.');
+      console.error(error?.response?.data?.message || 'Login failed.');
+      alert(error?.response?.data?.message || 'Invalid credentials.');
     }
   };
 

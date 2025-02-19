@@ -1,75 +1,55 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getClassById, initiatePayment } from '../utils/api';
 
 const BookClass = () => {
-  const [form, setForm] = useState({
-    className: "",
-    trainer: "",
-    date: "",
-    time: "",
-  });
+  const { id } = useParams();
+  const [classDetails, setClassDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+  useEffect(() => {
+    const fetchClassDetails = async () => {
+      try {
+        const data = await getClassById(id);
+        setClassDetails(data);
+      } catch (err) {
+        setError('Error fetching class details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClassDetails();
+  }, [id]);
+
+  const handlePayment = async () => {
+    try {
+      const userId = 'user123'; // Replace with actual user ID from context/auth
+      const paymentResponse = await initiatePayment(id, userId);
+      alert(`Payment initiated: ${paymentResponse.paymentUrl}`);
+      window.location.href = paymentResponse.paymentUrl;
+    } catch (err) {
+      alert('Failed to initiate payment');
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Implement booking API call
-    console.log("Booking submitted:", form);
-  };
+  if (loading) return <p>Loading class details...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
-    <div className="max-w-md mx-auto bg-white shadow-lg p-6 rounded-md">
-      <h1 className="text-xl font-bold mb-4">Book a Class</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700">Class Name</label>
-          <input
-            type="text"
-            name="className"
-            value={form.className}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md"
-          />
+    <div>
+      <h2>Book Class</h2>
+      {classDetails ? (
+        <div>
+          <p>Class: {classDetails.name}</p>
+          <p>Trainer: {classDetails.trainer}</p>
+          <p>Schedule: {classDetails.schedule}</p>
+          <p>Price: ${classDetails.price}</p>
+          <button onClick={handlePayment}>Proceed to Payment</button>
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Trainer</label>
-          <input
-            type="text"
-            name="trainer"
-            value={form.trainer}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Date</label>
-          <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">Time</label>
-          <input
-            type="time"
-            name="time"
-            value={form.time}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
-        >
-          Book Now
-        </button>
-      </form>
+      ) : (
+        <p>Class details not found.</p>
+      )}
     </div>
   );
 };

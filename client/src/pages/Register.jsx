@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import API from '../utils/api';
 
 const Register = () => {
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
+    name: '',
+    email: '',
+    password: '',
   });
 
   const handleChange = (e) => {
@@ -12,10 +13,15 @@ const Register = () => {
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Implement registration logic here
-    console.log("Registering with", form);
+    try {
+      const response = await API.post('/auth/register', form);
+      alert('Registration successful! Please log in.');
+      window.location.href = '/login'; // Redirect to login
+    } catch (error) {
+      alert(error?.response?.data?.message || 'Registration failed.');
+    }
   };
 
   return (
@@ -30,6 +36,7 @@ const Register = () => {
             value={form.name}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-md"
+            required
           />
         </div>
         <div className="mb-4">
@@ -40,6 +47,7 @@ const Register = () => {
             value={form.email}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-md"
+            required
           />
         </div>
         <div className="mb-4">
@@ -50,6 +58,7 @@ const Register = () => {
             value={form.password}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-md"
+            required
           />
         </div>
         <button

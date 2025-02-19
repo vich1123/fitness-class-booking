@@ -1,33 +1,24 @@
-const express = require('express');
+import express from 'express';
+import {
+  getAllTrainers,
+  getTrainerById,
+  createTrainer,
+  updateTrainer,
+  deleteTrainer,
+  addTrainerFeedback,
+  getTrainerFeedback
+} from '../controllers/trainerController.js';
+
 const router = express.Router();
-const Trainer = require('../models/Trainer'); // Import the Trainer model
 
-// Get all trainers
-router.get('/', async (req, res) => {
-  try {
-    const trainers = await Trainer.find(); // Fetch all trainers from the database
-    res.status(200).json(trainers);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch trainers', error: error.message });
-  }
-});
+router.get('/', getAllTrainers);
+router.get('/:id', getTrainerById);
+router.post('/', createTrainer);
+router.put('/:id', updateTrainer);
+router.delete('/:id', deleteTrainer);
 
-// Add a new trainer
-router.post('/', async (req, res) => {
-  const { name, specialization, experience } = req.body;
+// Feedback routes
+router.post('/:trainerId/feedback', addTrainerFeedback);
+router.get('/:trainerId/feedback', getTrainerFeedback);
 
-  try {
-    const newTrainer = new Trainer({
-      name,
-      specialization,
-      experience,
-    });
-
-    const savedTrainer = await newTrainer.save(); // Save the new trainer to the database
-    res.status(201).json(savedTrainer);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to add trainer', error: error.message });
-  }
-});
-
-module.exports = router;
+export default router;

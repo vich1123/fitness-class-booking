@@ -1,12 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getClassById } from '../utils/api';
 
-const ClassCard = ({ name, schedule, capacity }) => {
+const ClassCard = ({ classId }) => {
+  const [classData, setClassData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchClassDetails = async () => {
+      try {
+        const data = await getClassById(classId);
+        setClassData(data);
+      } catch (err) {
+        setError('Error: Class data not available.');
+      }
+    };
+    fetchClassDetails();
+  }, [classId]);
+
   return (
-    <div className="border rounded-lg shadow-md p-4">
-      <h3 className="text-xl font-bold">{name}</h3>
-      <p className="text-gray-600">Schedule: {schedule}</p>
-      <p className="text-gray-600">Capacity: {capacity}</p>
-      <button className="bg-green-500 text-white mt-4 py-2 px-4 rounded">Book Now</button>
+    <div className="class-card">
+      {error ? (
+        <p>{error}</p>
+      ) : classData ? (
+        <div>
+          <h3>{classData.name}</h3>
+          <p>Schedule: {classData.schedule}</p>
+          <p>Trainer: {classData.trainer?.name}</p>
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
 };

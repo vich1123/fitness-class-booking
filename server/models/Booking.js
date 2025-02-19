@@ -1,10 +1,9 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const BookingSchema = new mongoose.Schema({
-  user: { type: String, required: true }, // User's name or ID (depending on your structure)
-  classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class', required: true }, // Reference to the Class model
-  schedule: { type: String, required: true }, // Date and time of the booking
-  createdAt: { type: Date, default: Date.now }, // Automatically set the booking creation date
-});
+const bookingSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  class: { type: mongoose.Schema.Types.ObjectId, ref: 'Class', required: true },
+  status: { type: String, enum: ['confirmed', 'pending', 'canceled'], default: 'pending' }
+}, { timestamps: true });
 
-module.exports = mongoose.model('Booking', BookingSchema);
+export default mongoose.model('Booking', bookingSchema);
