@@ -15,22 +15,28 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// CORS Middleware to Explicitly Allow Netlify
-app.use(
-  cors({
-    origin: ["https://fitnessbookingonline.netlify.app"], // Allow only this frontend
-    credentials: true,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// CORS Configuration
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://fitnessbookingonline.netlify.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
 
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204); // Allow preflight requests
+  }
+  
+  next();
+});
+
+// Middleware
+app.use(cors({ origin: "https://fitnessbookingonline.netlify.app", credentials: true }));
 app.use(express.json());
 
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log(" Connected to MongoDB"))
+  .then(() => console.log("Connected to MongoDB"))
   .catch((error) => {
     console.error(" MongoDB connection error:", error);
     process.exit(1);
