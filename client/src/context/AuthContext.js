@@ -6,7 +6,6 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Check authentication status from local storage (optional)
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -24,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("user"); // Remove user data
+    localStorage.removeItem("user"); 
   };
 
   return (

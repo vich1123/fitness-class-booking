@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:10000/api",
+  baseURL: "https://fitness-class-booking.onrender.com/api",
 });
 
 export const getClasses = () => API.get("/classes");
