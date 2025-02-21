@@ -7,8 +7,8 @@ import cors from "cors";
 dotenv.config();
 
 // Debug logs to verify `.env` variables
-console.log("🔍 MONGO_URI:", process.env.MONGO_URI);
-console.log("🔍 FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log("MONGO_URI:", process.env.MONGO_URI);
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
 const app = express();
 
