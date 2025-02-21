@@ -8,18 +8,20 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js"; // Import payment routes
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 dotenv.config();
 
 // Initialize Express app
 const app = express();
 
-// Middleware
+// CORS Middleware to Explicitly Allow Netlify
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
+    origin: ["https://fitnessbookingonline.netlify.app"], // Allow only this frontend
     credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -27,9 +29,12 @@ app.use(express.json());
 
 // MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((error) => console.error("MongoDB connection error:", error));
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log(" Connected to MongoDB"))
+  .catch((error) => {
+    console.error(" MongoDB connection error:", error);
+    process.exit(1);
+  });
 
 // API Routes
 app.use("/api/trainers", trainerRoutes);
