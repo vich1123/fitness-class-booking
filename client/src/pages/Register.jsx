@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+const API_URL = "https://fitness-class-booking.onrender.com/api";
+
 const Register = () => {
   const [form, setForm] = useState({
     name: "",
@@ -10,9 +12,9 @@ const Register = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // ✅ Log the API URL for Debugging
+  // Log Backend API URL for Debugging
   useEffect(() => {
-    console.log("Backend API URL:", process.env.REACT_APP_BACKEND_URL);
+    console.log("Backend API URL:", API_URL);
   }, []);
 
   const handleChange = (e) => {
@@ -22,23 +24,12 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // ✅ Use Correct API URL from `.env`
-      const API_URL = process.env.REACT_APP_BACKEND_URL;
-      if (!API_URL) {
-        throw new Error("Backend URL is missing. Check .env setup.");
-      }
-
-      // ✅ Use Correct `form` Data Instead of `userData`
-      const res = await axios.post(`${API_URL}/api/auth/register`, form);
-      
+      const res = await axios.post(`${API_URL}/auth/register`, form);
       setSuccess("Registration successful! Redirecting...");
       setTimeout(() => {
         window.location.href = "/login";
-      }, 1500); // Redirect to login page
-
-      console.log("Registration Success:", res.data);
+      }, 1500);
     } catch (error) {
       console.error("Registration Failed:", error.response?.data || error.message);
       setError(error.response?.data?.message || "Registration failed.");

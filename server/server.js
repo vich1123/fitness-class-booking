@@ -3,34 +3,33 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 
-// Load .env before using variables
+// Load environment variables
 dotenv.config();
 
-// .env variables are loaded correctly
+// Debug logs to verify `.env` variables
 console.log("🔍 MONGO_URI:", process.env.MONGO_URI);
 console.log("🔍 FRONTEND_URL:", process.env.FRONTEND_URL);
 
-// Initialize Express app
 const app = express();
 
-// CORS Policy (Explicitly Allow Netlify)
+// CORS Policy to Allow Netlify
 const allowedOrigins = ["https://fitnessbookingonline.netlify.app"];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Blocked by CORS"));
-    }
-  },
-  credentials: true,
-  methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
-
-// Preflight Requests
-app.options("*", cors());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.error("Blocked by CORS:", origin);
+        callback(new Error("Blocked by CORS"));
+      }
+    },
+    credentials: true,
+    methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Middleware
 app.use(express.json());
@@ -41,10 +40,11 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log(" Connected to MongoDB"))
   .catch((error) => {
-    console.error("MongoDB Connection Error:", error.message);
+    console.error(" MongoDB Connection Error:", error.message);
     process.exit(1);
   });
 
@@ -73,5 +73,5 @@ app.get("/", (req, res) => {
 // Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });
