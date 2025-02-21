@@ -1,68 +1,81 @@
-import React, { useState } from 'react';
-import API from '../utils/api';
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import axios from "axios";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
-      const response = await API.post('/auth/login', { email, password });
-      localStorage.setItem('token', response.data.token);
-      alert('Login successful!');
-      window.location.href = '/dashboard'; // Redirect to dashboard
-    } catch (error) {
-      console.error(error?.response?.data?.message || 'Login failed.');
-      alert(error?.response?.data?.message || 'Invalid credentials.');
+      const response = await axios.post("http://localhost:10000/api/auth/login", {
+        email,
+        password,
+      });
+
+      if (response.data) {
+        login(response.data); // Set authentication state
+        navigate("/dashboard"); // Redirect after login
+      }
+    } catch (err) {
+      setError("Invalid email or password");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Login</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-6">Sign In</h2>
+
+        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600" htmlFor="email">
-              Email Address
-            </label>
+            <label className="block text-gray-600 text-sm font-medium">Email</label>
             <input
               type="email"
-              id="email"
-              placeholder="Email"
+              placeholder="Enter your email"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="block w-full p-3 mt-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-600" htmlFor="password">
-              Password
-            </label>
+            <label className="block text-gray-600 text-sm font-medium">Password</label>
             <input
               type="password"
-              id="password"
-              placeholder="Password"
+              placeholder="Enter your password"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block w-full p-3 mt-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
             />
           </div>
+
           <button
             type="submit"
-            className="w-full py-3 mt-4 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition duration-300"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
           >
             Login
           </button>
         </form>
-        <p className="mt-4 text-sm text-center text-gray-600">
-          Don't have an account?{' '}
-          <a href="/register" className="text-blue-500 hover:underline">
-            Sign up here
-          </a>
+
+        {/* Sign Up Section */}
+        <p className="text-sm text-gray-600 text-center mt-4">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-blue-500 hover:underline">
+            Sign Up
+          </Link>
         </p>
       </div>
     </div>

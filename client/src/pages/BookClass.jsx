@@ -1,55 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getClassById, initiatePayment } from '../utils/api';
+import React, { useState } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const BookClass = () => {
-  const { id } = useParams();
-  const [classDetails, setClassDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { classId } = useParams();
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    const fetchClassDetails = async () => {
-      try {
-        const data = await getClassById(id);
-        setClassDetails(data);
-      } catch (err) {
-        setError('Error fetching class details');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchClassDetails();
-  }, [id]);
-
-  const handlePayment = async () => {
+  const handleBooking = async () => {
     try {
-      const userId = 'user123'; // Replace with actual user ID from context/auth
-      const paymentResponse = await initiatePayment(id, userId);
-      alert(`Payment initiated: ${paymentResponse.paymentUrl}`);
-      window.location.href = paymentResponse.paymentUrl;
+      console.log("Attempting to book class:", classId);
+
+      const response = await axios.post("http://localhost:10000/api/bookings", {  // ✅ FIXED: Removed extra "/api/"
+        userId: "65b4b9f9b8bf7c305a123456", // Replace with actual user ID
+        classId,
+        date: new Date().toISOString(),
+      });
+
+      setSuccess("Booking successful!");
+      console.log("Booking response:", response.data);
     } catch (err) {
-      alert('Failed to initiate payment');
+      console.error("Booking failed:", err.response?.data || err.message);
+      setError("Booking failed. Please try again.");
     }
   };
-
-  if (loading) return <p>Loading class details...</p>;
-  if (error) return <p>{error}</p>;
 
   return (
     <div>
       <h2>Book Class</h2>
-      {classDetails ? (
-        <div>
-          <p>Class: {classDetails.name}</p>
-          <p>Trainer: {classDetails.trainer}</p>
-          <p>Schedule: {classDetails.schedule}</p>
-          <p>Price: ${classDetails.price}</p>
-          <button onClick={handlePayment}>Proceed to Payment</button>
-        </div>
-      ) : (
-        <p>Class details not found.</p>
-      )}
+      <button onClick={handleBooking} className="bg-blue-500 text-white p-2 rounded">
+        Book Now
+      </button>
+      {success && <p className="text-green-500">{success}</p>}
+      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 };

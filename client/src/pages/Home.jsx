@@ -10,6 +10,8 @@ const Home = () => {
   ];
 
   const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -17,7 +19,10 @@ const Home = () => {
         const response = await axios.get('http://localhost:10000/api/classes');
         setClasses(response.data);
       } catch (error) {
-        console.error("Error fetching classes:", error);
+        console.error("❌ Error fetching classes:", error);
+        setError("Failed to load classes. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -42,15 +47,21 @@ const Home = () => {
 
       <section className="py-8 px-4">
         <h2 className="text-2xl font-semibold mb-4">Available Classes</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {classes.length === 0 ? (
-            <p>No classes available.</p>
-          ) : (
-            classes.map(cls => (
-              <ClassCard key={cls._id} classId={cls._id} {...cls} />
-            ))
-          )}
-        </div>
+        {loading ? (
+          <p>Loading classes...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {classes.length === 0 ? (
+              <p>No classes available.</p>
+            ) : (
+              classes.map(cls => (
+                <ClassCard key={cls._id} classId={cls._id} {...cls} />
+              ))
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

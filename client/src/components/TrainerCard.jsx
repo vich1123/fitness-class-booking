@@ -1,10 +1,14 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-const TrainerCard = ({ id, name, expertise }) => {
+const TrainerCard = ({ _id, name, expertise }) => {
   const navigate = useNavigate();
 
   const handleViewProfile = () => {
-    navigate(`/trainers/${id}`);
+    if (!_id || _id.length !== 24) {
+      console.error("Invalid Trainer ID passed to TrainerCard:", _id);
+      return;
+    }
+    navigate(`/trainers/${_id}`);
   };
 
   return (
@@ -14,6 +18,7 @@ const TrainerCard = ({ id, name, expertise }) => {
       <button
         onClick={handleViewProfile}
         className="bg-blue-500 text-white mt-4 py-2 px-4 rounded"
+        disabled={!_id} // Disable button if no valid ID
       >
         View Profile
       </button>

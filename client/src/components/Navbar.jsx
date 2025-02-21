@@ -1,16 +1,39 @@
-import React from 'react';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    navigate("/login"); // Redirect to login after logout
+  };
+
   return (
-    <nav className="bg-blue-600 text-white p-4">
+    <nav className="bg-blue-600 p-4 text-white">
       <div className="container mx-auto flex justify-between">
-        <h1 className="text-xl font-bold">Fitness Class Booking</h1>
-        <ul className="flex space-x-4">
-          <li><a href="/" className="hover:underline">Home</a></li>
-          <li><a href="/trainers" className="hover:underline">Trainers</a></li>
-          <li><a href="/classes" className="hover:underline">Classes</a></li>
-          <li><a href="/dashboard" className="hover:underline">Dashboard</a></li>
-        </ul>
+        <Link to="/" className="font-bold text-lg">
+          Fitness Class Booking
+        </Link>
+        <div className="flex gap-4">
+          <Link to="/">Home</Link>
+          <Link to="/trainers">Trainers</Link>
+          <Link to="/classes">Classes</Link>
+          <Link to="/dashboard">Dashboard</Link>
+
+          {token ? (
+            <button onClick={handleLogout} className="bg-red-500 px-3 py-1 rounded">
+              Logout
+            </button>
+          ) : (
+            <>
+              <Link to="/login">Login</Link>
+              <Link to="/register">Register</Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -1,27 +1,37 @@
-import React from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import API from '../utils/api';
+import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+const Payment = () => {
+  const { bookingId } = useParams();
+  const [paymentStatus, setPaymentStatus] = useState(null);
 
-const Payment = ({ classId, amount }) => {
-    const handlePayment = async () => {
-        try {
-            const response = await API.post('/bookings/pay', { classId, amount });
-            const { sessionId } = response.data;
+  const handlePayment = async () => {
+    try {
+      const response = await fetch(`/api/payments/${bookingId}/pay`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-            const stripe = await stripePromise;
-            await stripe.redirectToCheckout({ sessionId });
-        } catch (error) {
-            alert('Payment failed.');
-        }
-    };
+      const data = await response.json();
+      if (response.ok) {
+        setPaymentStatus("Payment successful!");
+      } else {
+        setPaymentStatus("Payment failed: " + data.message);
+      }
+    } catch (error) {
+      setPaymentStatus("Payment failed: " + error.message);
+    }
+  };
 
-    return (
-        <button onClick={handlePayment} className="bg-blue-500 text-white p-2 rounded">
-            Pay Now
-        </button>
-    );
+  return (
+    <div className="payment-container">
+      <h2>Complete Your Payment</h2>
+      <button onClick={handlePayment}>Pay Now</button>
+      {paymentStatus && <p>{paymentStatus}</p>}
+    </div>
+  );
 };
 
 export default Payment;

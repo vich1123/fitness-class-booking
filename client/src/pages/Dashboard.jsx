@@ -1,54 +1,61 @@
-import React, { useEffect, useState } from 'react';
-import { fetchRecommendations, fetchNotifications } from '../utils/api';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
-  const [recommendedClasses, setRecommendedClasses] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const interests = ["Yoga", "Strength Training"]; // Replace with actual user interests
-        const recommendations = await fetchRecommendations(interests);
-        setRecommendedClasses(recommendations);
-      } catch (error) {
-        console.error('Error fetching recommended classes:', error);
-      }
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
 
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchNotifications = async () => {
       try {
-        const userId = "USER_ID_HERE"; // Replace with actual user ID
-        const notificationsData = await fetchNotifications(userId);
-        setNotifications(notificationsData);
+        const response = await axios.get(`http://localhost:10000/api/notifications/${userId}`);
+        setNotifications(response.data);
       } catch (error) {
-        console.error('Error fetching notifications:', error);
+        console.error("Error fetching notifications:", error);
       }
     };
 
-    fetchData();
-  }, []);
+    fetchNotifications();
+  }, [userId]);
 
   return (
-    <div>
-      <h2>Recommended Classes</h2>
-      {recommendedClasses.length > 0 ? (
-        recommendedClasses.map((classItem) => (
-          <div key={classItem.id}>
-            <p>{classItem.name} - {classItem.schedule}</p>
-          </div>
-        ))
-      ) : (
-        <p>No recommendations available.</p>
-      )}
+    <div className="container mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
 
-      <h2>Notifications</h2>
-      {notifications.length > 0 ? (
-        notifications.map((notification) => (
-          <div key={notification.id}>
-            <p>{notification.message}</p>
-          </div>
-        ))
+      {/* Added View Booking History and Payment History Links */}
+      <div className="mb-4">
+        <Link to="/booking-history" className="text-blue-500 hover:underline">
+          View Booking History
+        </Link>
+      </div>
+      <div className="mb-4">
+        <Link to="/payment-history" className="text-blue-500 hover:underline">
+          View Payment History
+        </Link>
+      </div>
+
+      {/* Notifications Section */}
+      <h3 className="text-xl font-bold mt-4">Notifications</h3>
+      {notifications.length === 0 ? (
+        <p className="text-gray-500">No notifications available</p>
       ) : (
-        <p>No new notifications.</p>
+        <ul className="bg-white shadow-md rounded-lg p-4">
+          {notifications.map((notification) => (
+            <li key={notification._id} className="p-2 border-b last:border-none">
+              {notification.message}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
