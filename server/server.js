@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import trainerRoutes from "./routes/trainerRoutes.js";
@@ -25,12 +24,10 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
     return res.sendStatus(204); // Allow preflight requests
   }
-  
   next();
 });
 
 // Middleware
-app.use(cors({ origin: "https://fitnessbookingonline.netlify.app", credentials: true }));
 app.use(express.json());
 
 // MongoDB Connection
@@ -49,15 +46,15 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
-app.use("/api/payments", paymentRoutes); // Added payment route
+app.use("/api/payments", paymentRoutes);
 
 // Root Endpoint
 app.get("/", (req, res) => {
-  res.send("Fitness Class Booking API is running...");
+  res.send(" Fitness Class Booking API is running...");
 });
 
 // Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
