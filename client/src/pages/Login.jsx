@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 
+const API_BASE_URL = "https://your-backend-api-url.com/api"; // Update with deployed backend URL
+
 const Login = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -16,7 +18,7 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:10000/api/auth/login", {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password,
       });

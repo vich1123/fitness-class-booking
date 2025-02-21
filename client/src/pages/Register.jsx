@@ -18,7 +18,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:10000/api/auth/register", form);
+      await axios.post(`${API_BASE_URL}/auth/register`, userData);
       setSuccess("Registration successful! Please log in.");
       setTimeout(() => {
         window.location.href = "/login";
