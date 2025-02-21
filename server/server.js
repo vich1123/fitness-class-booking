@@ -3,34 +3,44 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 
-//  Load .env file before using environment variables
+// Load .env before using variables
 dotenv.config();
 
-// Debugging log to check if .env is loading correctly
+// .env variables are loaded correctly
 console.log("🔍 MONGO_URI:", process.env.MONGO_URI);
-console.log("🔍 PORT:", process.env.PORT);
+console.log("🔍 FRONTEND_URL:", process.env.FRONTEND_URL);
 
 // Initialize Express app
 const app = express();
 
-// Ensure MONGO_URI is present
-if (!process.env.MONGO_URI) {
-  console.error(" ERROR: MONGO_URI is undefined. Check your .env file.");
-  process.exit(1);
-}
+// CORS Policy (Explicitly Allow Netlify)
+const allowedOrigins = ["https://fitnessbookingonline.netlify.app"];
 
-// CORS Configuration
 app.use(cors({
-  origin: "https://fitnessbookingonline.netlify.app",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Blocked by CORS"));
+    }
+  },
   credentials: true,
   methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// Middleware to parse JSON
+// Preflight Requests
+app.options("*", cors());
+
+// Middleware
 app.use(express.json());
 
-// Connect to MongoDB with proper error handling
+// MongoDB Connection
+if (!process.env.MONGO_URI) {
+  console.error("ERROR: MONGO_URI is undefined. Check your .env file.");
+  process.exit(1);
+}
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((error) => {
@@ -57,11 +67,11 @@ app.use("/api/payments", paymentRoutes);
 
 // Root API Endpoint
 app.get("/", (req, res) => {
-  res.send(" Fitness Class Booking API is running...");
+  res.send("Fitness Class Booking API is running...");
 });
 
 // Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
