@@ -1,9 +1,12 @@
-import express from 'express';
-import { initiatePayment, verifyPayment } from '../controllers/paymentController.js';
+import express from "express";
+import { processPayment, getPaymentHistory } from "../controllers/paymentController.js";
 
 const router = express.Router();
 
-router.post('/initiate', initiatePayment);
-router.post('/verify', verifyPayment);
+// Route for processing payment
+router.post("/process", processPayment);
+
+// Route for fetching payment history
+router.get("/history/:userId", getPaymentHistory);
 
 export default router;

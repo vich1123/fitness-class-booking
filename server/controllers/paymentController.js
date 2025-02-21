@@ -1,47 +1,55 @@
-import Stripe from 'stripe';
-import dotenv from 'dotenv';
+import Payment from "../models/Payment.js";
+import Booking from "../models/Booking.js";
+import mongoose from "mongoose";
 
-dotenv.config();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-export const initiatePayment = async (req, res) => {
+// Process payment
+export const processPayment = async (req, res) => {
   try {
-    const { amount, currency, classId } = req.body;
-    
-    if (!amount || !currency || !classId) {
-      return res.status(400).json({ message: "Missing payment details" });
+    const { userId, bookingId, amount, paymentMethod } = req.body;
+
+    if (!userId || !bookingId || !amount || !paymentMethod) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Convert to cents
-      currency,
-      metadata: { classId },
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(bookingId)) {
+      return res.status(400).json({ message: "Invalid user or booking ID" });
+    }
+
+    // Ensure booking exists
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Create payment record
+    const payment = new Payment({
+      user: userId,
+      booking: bookingId,
+      amount,
+      paymentMethod,
+      status: "completed",
     });
 
-    res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    await payment.save();
+
+    res.status(201).json({ message: "Payment successful", payment });
   } catch (error) {
-    console.error("Payment initiation error:", error);
-    res.status(500).json({ message: "Failed to initiate payment", error });
+    res.status(500).json({ message: "Payment processing failed", error: error.message });
   }
 };
 
-export const verifyPayment = async (req, res) => {
+// Get payment history for a user
+export const getPaymentHistory = async (req, res) => {
   try {
-    const { paymentIntentId } = req.body;
+    const { userId } = req.params;
 
-    if (!paymentIntentId) {
-      return res.status(400).json({ message: "Missing payment intent ID" });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
     }
 
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-    if (paymentIntent.status === 'succeeded') {
-      res.status(200).json({ message: "Payment successful" });
-    } else {
-      res.status(400).json({ message: "Payment not completed" });
-    }
+    const payments = await Payment.find({ user: userId }).populate("booking");
+    res.status(200).json(payments);
   } catch (error) {
-    console.error("Payment verification error:", error);
-    res.status(500).json({ message: "Failed to verify payment", error });
+    res.status(500).json({ message: "Failed to fetch payment history", error: error.message });
   }
 };

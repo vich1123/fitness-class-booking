@@ -1,24 +1,20 @@
-import express from 'express';
+import express from "express";
 import {
   getAllTrainers,
   getTrainerById,
-  createTrainer,
+  addTrainer,
   updateTrainer,
   deleteTrainer,
-  addTrainerFeedback,
-  getTrainerFeedback
-} from '../controllers/trainerController.js';
+  submitFeedback, // Ensure this is imported
+} from "../controllers/trainerController.js";
 
 const router = express.Router();
 
-router.get('/', getAllTrainers);
-router.get('/:id', getTrainerById);
-router.post('/', createTrainer);
-router.put('/:id', updateTrainer);
-router.delete('/:id', deleteTrainer);
-
-// Feedback routes
-router.post('/:trainerId/feedback', addTrainerFeedback);
-router.get('/:trainerId/feedback', getTrainerFeedback);
+router.get("/", getAllTrainers);
+router.get("/:id", getTrainerById);
+router.post("/", addTrainer);
+router.put("/:id", updateTrainer);
+router.delete("/:id", deleteTrainer);
+router.post("/:id/feedback", submitFeedback); // Ensure this is correctly added
 
 export default router;
