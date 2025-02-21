@@ -1,6 +1,44 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
+
+//  Load .env file before using environment variables
+dotenv.config();
+
+// Debugging log to check if .env is loading correctly
+console.log("🔍 MONGO_URI:", process.env.MONGO_URI);
+console.log("🔍 PORT:", process.env.PORT);
+
+// Initialize Express app
+const app = express();
+
+// Ensure MONGO_URI is present
+if (!process.env.MONGO_URI) {
+  console.error(" ERROR: MONGO_URI is undefined. Check your .env file.");
+  process.exit(1);
+}
+
+// CORS Configuration
+app.use(cors({
+  origin: "https://fitnessbookingonline.netlify.app",
+  credentials: true,
+  methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
+// Middleware to parse JSON
+app.use(express.json());
+
+// Connect to MongoDB with proper error handling
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((error) => {
+    console.error("MongoDB Connection Error:", error.message);
+    process.exit(1);
+  });
+
+// API Routes
 import trainerRoutes from "./routes/trainerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -9,37 +47,6 @@ import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-dotenv.config();
-
-// Initialize Express app
-const app = express();
-
-// CORS Configuration
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://fitnessbookingonline.netlify.app");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204); // Allow preflight requests
-  }
-  next();
-});
-
-// Middleware
-app.use(express.json());
-
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((error) => {
-    console.error(" MongoDB connection error:", error);
-    process.exit(1);
-  });
-
-// API Routes
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/users", userRoutes);
@@ -48,7 +55,7 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// Root Endpoint
+// Root API Endpoint
 app.get("/", (req, res) => {
   res.send(" Fitness Class Booking API is running...");
 });
