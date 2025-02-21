@@ -15,14 +15,19 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+
     try {
       const res = await axios.post(API_URL, form);
-      setSuccess("Registration successful! Redirecting...");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1500);
+      if (res.status === 201) {
+        setSuccess("Registration successful! Redirecting...");
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 1500);
+      }
     } catch (error) {
-      setError("Registration failed.");
+      setError("Registration failed. User may already exist.");
     }
   };
 
