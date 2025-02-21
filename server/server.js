@@ -7,8 +7,8 @@ import cors from "cors";
 dotenv.config();
 
 // Debug logs to verify `.env` variables
-console.log("MONGO_URI:", process.env.MONGO_URI);
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log(" MONGO_URI:", process.env.MONGO_URI ? "Loaded " : "Not Found ");
+console.log(" FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded " : "Not Found ");
 
 const app = express();
 
@@ -24,15 +24,14 @@ app.use(cors({
     methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
 app.options("*", cors());
 
 // Middleware
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("Connected to MongoDB"))
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log(" Connected to MongoDB"))
     .catch((error) => {
         console.error("MongoDB Connection Error:", error.message);
         process.exit(1);
@@ -63,5 +62,5 @@ app.get("/", (req, res) => {
 // Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });
