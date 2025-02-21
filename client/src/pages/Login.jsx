@@ -1,14 +1,11 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 
-const API_BASE_URL = "https://fitness-class-booking.onrender.com/api";
+const API_URL = "https://fitness-class-booking.onrender.com/api/auth/login";
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,13 +15,10 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        email,
-        password,
-      });
+      const response = await axios.post(API_URL, { email, password });
 
       if (response.data) {
-        login(response.data);
+        localStorage.setItem("token", response.data.token);
         navigate("/dashboard");
       }
     } catch (err) {
@@ -64,6 +58,12 @@ const Login = () => {
             Login
           </button>
         </form>
+        <p className="text-sm text-center mt-4">
+          New User?{" "}
+          <Link to="/register" className="text-blue-500 hover:underline">
+            Sign Up
+          </Link>
+        </p>
       </div>
     </div>
   );

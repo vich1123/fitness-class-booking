@@ -12,43 +12,28 @@ console.log("🔍 FRONTEND_URL:", process.env.FRONTEND_URL);
 
 const app = express();
 
-// CORS Policy to Allow Netlify
+//  Fix CORS Policy to Allow Netlify
 const allowedOrigins = ["https://fitnessbookingonline.netlify.app"];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.error("Blocked by CORS:", origin);
-        callback(new Error("Blocked by CORS"));
-      }
-    },
+app.use(cors({
+    origin: allowedOrigins,
     credentials: true,
     methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+}));
+app.options("*", cors());
 
-// Middleware
+//  Middleware
 app.use(express.json());
 
-// MongoDB Connection
-if (!process.env.MONGO_URI) {
-  console.error("ERROR: MONGO_URI is undefined. Check your .env file.");
-  process.exit(1);
-}
+//  MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((error) => {
+        console.error("MongoDB Connection Error:", error.message);
+        process.exit(1);
+    });
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log(" Connected to MongoDB"))
-  .catch((error) => {
-    console.error(" MongoDB Connection Error:", error.message);
-    process.exit(1);
-  });
-
-// API Routes
+//  API Routes
 import trainerRoutes from "./routes/trainerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
