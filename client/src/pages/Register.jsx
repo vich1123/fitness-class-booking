@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = "/api/auth/register"; // Use Netlify proxy if set up, else update manually with full Render URL
+const API_URL = "https://fitness-class-booking.onrender.com/api/auth/register";
 
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
