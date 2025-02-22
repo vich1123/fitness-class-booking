@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = "https://fitness-class-booking.onrender.com/api/auth/register";
+const API_URL = process.env.REACT_APP_BACKEND_URL
+  ? `${process.env.REACT_APP_BACKEND_URL}/api/auth/register`
+  : "https://fitness-class-booking.onrender.com/api/auth/register";
 
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });

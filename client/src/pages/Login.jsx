@@ -30,7 +30,9 @@ const Login = () => {
       if (response.status === 200) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/dashboard");
+
+        // Redirect to Home Page after login
+        navigate("/");
       }
     } catch (err) {
       if (!err.response) {
