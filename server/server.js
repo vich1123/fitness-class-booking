@@ -14,18 +14,12 @@ const app = express();
 
 // Fix CORS Policy
 const allowedOrigins = [
-    process.env.FRONTEND_URL || "https://fitnessbooking.netlify.app",
+    process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
     "http://localhost:3000"
 ];
 
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("CORS policy does not allow this origin"), false);
-        }
-    },
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
