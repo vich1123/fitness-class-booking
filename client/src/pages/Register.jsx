@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = process.env.REACT_APP_BACKEND_URL + "/api/auth/register";
+const API_URL = "/api/auth/register"; // Use Netlify proxy if set up, else update manually with full Render URL
 
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -20,7 +20,6 @@ const Register = () => {
     setSuccess("");
     setLoading(true);
 
-    // Simple validation
     if (!form.name || !form.email || !form.password) {
       setError("All fields are required.");
       setLoading(false);
@@ -28,15 +27,20 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post(API_URL, form);
+      const res = await axios.post(API_URL, form, {
+        headers: { "Content-Type": "application/json" },
+      });
+
       if (res.status === 201) {
         setSuccess("Registration successful! Redirecting...");
         setTimeout(() => {
           window.location.href = "/login";
         }, 1500);
       }
-    } catch (error) {
-      setError(error.response?.data?.message || "Registration failed. User may already exist.");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Registration failed. Try again."
+      );
     } finally {
       setLoading(false);
     }
