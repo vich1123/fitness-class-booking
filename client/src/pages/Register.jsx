@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = "https://fitness-class-booking.onrender.com/api/auth/register";
+const API_URL = process.env.REACT_APP_BACKEND_URL + "/api/auth/register";
 
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,6 +18,14 @@ const Register = () => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setLoading(true);
+
+    // Simple validation
+    if (!form.name || !form.email || !form.password) {
+      setError("All fields are required.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await axios.post(API_URL, form);
@@ -27,7 +36,9 @@ const Register = () => {
         }, 1500);
       }
     } catch (error) {
-      setError("Registration failed. User may already exist.");
+      setError(error.response?.data?.message || "Registration failed. User may already exist.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,8 +85,12 @@ const Register = () => {
               required
             />
           </div>
-          <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
-            Register
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
       </div>

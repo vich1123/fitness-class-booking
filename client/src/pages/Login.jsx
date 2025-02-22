@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_URL = "https://fitness-class-booking.onrender.com/api/auth/login";
+const API_URL = process.env.REACT_APP_BACKEND_URL + "/api/auth/login";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await axios.post(API_URL, { email, password });
@@ -22,7 +24,9 @@ const Login = () => {
         navigate("/dashboard");
       }
     } catch (err) {
-      setError("Invalid email or password");
+      setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,8 +58,12 @@ const Login = () => {
               required
             />
           </div>
-          <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
-            Login
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p className="text-sm text-center mt-4">
