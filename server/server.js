@@ -8,30 +8,18 @@ dotenv.config();
 
 // Debug logs to verify `.env` variables
 console.log("Checking Environment Variables...");
-console.log("MONGO_URI:", process.env.MONGO_URI || "Not Found");
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL || "Not Found");
+console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
 
 const app = express();
 
 // Fix CORS Policy
-const allowedOrigins = [
-    "https://fitnessbookingonline.netlify.app",
-    "http://localhost:3000"
-];
-
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("CORS policy does not allow this origin"));
-        }
-    },
+    origin: ["https://fitnessbookingonline.netlify.app", "http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
 app.options("*", cors()); // Enable pre-flight requests
 
 // Middleware
@@ -70,14 +58,23 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
 
+// Debug Route to Check Environment Variables
+app.get("/debug", (req, res) => {
+    res.json({
+        message: "Debug endpoint working",
+        frontend_url: process.env.FRONTEND_URL,
+        mongo_uri: process.env.MONGO_URI ? "Loaded" : "Not Loaded",
+    });
+});
+
 // Root API Endpoint
 app.get("/", (req, res) => {
-    res.send("Fitness Class Booking API is running...");
+    res.send(" Fitness Class Booking API is running...");
 });
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error("Error:", err.message);
+    console.error(" Error:", err.message);
     res.status(500).json({ message: "Internal Server Error" });
 });
 
