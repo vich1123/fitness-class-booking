@@ -1,13 +1,13 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
 
-const API_URL = process.env.REACT_APP_BACKEND_URL + "/api/auth/login";
+const API_URL = process.env.REACT_APP_BACKEND_URL
+  ? `${process.env.REACT_APP_BACKEND_URL}/api/auth/login`
+  : "https://fitness-class-booking.onrender.com/api/auth/login";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,15 +18,22 @@ const Login = () => {
     setError("");
     setLoading(true);
 
+    if (!email || !password) {
+      setError("Both email and password are required.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await axios.post(API_URL, { email, password });
 
       if (response.status === 200) {
-        login(response.data.user);
-        navigate("/dashboard"); // Redirect to dashboard after login
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        navigate("/");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password");
+      setError(err.response?.data?.message || "Invalid email or password.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +50,7 @@ const Login = () => {
             <input
               type="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -54,7 +61,7 @@ const Login = () => {
             <input
               type="password"
               placeholder="Enter your password"
-              className="w-full px-4 py-2 border rounded-lg"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
