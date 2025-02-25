@@ -3,6 +3,8 @@ import axios from 'axios';
 import TrainerCard from '../components/TrainerCard';
 import ClassCard from '../components/ClassCard';
 
+const API_URL = process.env.REACT_APP_BACKEND_URL || "https://fitness-class-booking.onrender.com";
+
 const Home = () => {
   const trainers = [
     { id: 1, name: 'John Doe', expertise: 'Yoga Expert' },
@@ -16,7 +18,7 @@ const Home = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/classes`);
+        const response = await axios.get(`${API_URL}/api/classes`);
         setClasses(response.data);
       } catch (error) {
         console.error("Error fetching classes:", error);

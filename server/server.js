@@ -2,39 +2,21 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import connectDB from "./config/db.js";
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
 
-// Debugging environment variables
+// Debugging Logs for ENV Variables
 console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
 console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
 
-// Connect to MongoDB
-connectDB();
-
-// CORS Configuration
+// CORS Setup: Allow only specific origins
 const allowedOrigins = [
     process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
     "http://localhost:3000"
 ];
-
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    }
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-    
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(200);
-    }
-    next();
-});
 
 app.use(cors({
     origin: allowedOrigins,
@@ -43,10 +25,27 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
+app.options("*", cors()); // Enable pre-flight requests
+
 // Middleware
 app.use(express.json());
 
-// Import API Routes
+// MongoDB Connection
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log("Connected to MongoDB");
+    } catch (error) {
+        console.error("MongoDB Connection Error:", error.message);
+        process.exit(1);
+    }
+};
+connectDB();
+
+// API Routes
 import trainerRoutes from "./routes/trainerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
