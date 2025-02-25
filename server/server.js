@@ -8,22 +8,24 @@ dotenv.config();
 
 // Debugging logs to verify environment variables
 console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? process.env.FRONTEND_URL : "Not Found");
 
 // Create Express App
 const app = express();
 
-// CORS Setup - Allow Deployed Frontend & Localhost
+// Allowed CORS Origins (Netlify & Localhost)
 const allowedOrigins = [
     process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
     "http://localhost:3000"
 ];
 
+// CORS Configuration
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
+            console.error(`CORS Blocked Origin: ${origin}`);
             callback(new Error("Not allowed by CORS"));
         }
     },
@@ -32,22 +34,23 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// Ensure preflight requests are handled correctly
-app.options("*", cors()); 
+// Handle Preflight Requests
+app.options("*", cors());
 
 // Middleware
 app.use(express.json());
 
-// Explicitly handle CORS headers
+// Explicitly Set CORS Headers on Response
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", allowedOrigins.includes(req.headers.origin) ? req.headers.origin : "https://fitnessbookingonline.netlify.app");
+    const origin = allowedOrigins.includes(req.headers.origin) ? req.headers.origin : allowedOrigins[0];
+    res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.header("Access-Control-Allow-Credentials", "true");
     next();
 });
 
-// MongoDB Connection with Debugging
+// MongoDB Connection with Better Error Handling
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
@@ -80,13 +83,13 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// **EXPLICITLY LOG EACH REQUEST**
+// Log Each API Request
 app.use((req, res, next) => {
-    console.log(` API Request - Method: ${req.method}, Path: ${req.path}`);
+    console.log(`API Request - Method: ${req.method}, Path: ${req.path}`);
     next();
 });
 
-// Root Route
+// Root Route (Health Check)
 app.get("/", (req, res) => {
     res.send("Fitness Class Booking API is running...");
 });
