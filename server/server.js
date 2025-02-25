@@ -15,36 +15,40 @@ const app = express();
 
 // CORS Setup - Allow Deployed Frontend & Localhost
 const allowedOrigins = [
-    process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
-    "http://localhost:3000"
+    "https://fitnessbookingonline.netlify.app", // Deployed Frontend
+    "http://localhost:3000" // Local Development
 ];
 
-// Middleware for CORS
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    }
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-
-    if (req.method === "OPTIONS") {
-        return res.status(204).send(""); // Respond to preflight requests
-    }
-    next();
-});
-
-// Enable CORS globally
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+// Ensure preflight requests are handled correctly
+app.options("*", cors());
 
 // Middleware
 app.use(express.json());
 
-// MongoDB Connection
+// Explicitly handle CORS headers
+app.use((req, res, next) => {
+    const origin = allowedOrigins.includes(req.headers.origin) ? req.headers.origin : "https://fitnessbookingonline.netlify.app";
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+});
+
+// MongoDB Connection with Debugging
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
@@ -77,7 +81,7 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// Debugging log for every API request
+// **EXPLICITLY LOG EACH REQUEST**
 app.use((req, res, next) => {
     console.log(`API Request - Method: ${req.method}, Path: ${req.path}`);
     next();
