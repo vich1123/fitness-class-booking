@@ -18,11 +18,7 @@ const Home = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/classes`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await axios.get(`${API_URL}/api/classes`);
         setClasses(response.data);
       } catch (error) {
         console.error("Error fetching classes:", error);
@@ -31,7 +27,6 @@ const Home = () => {
         setLoading(false);
       }
     };
-
     fetchClasses();
   }, []);
 

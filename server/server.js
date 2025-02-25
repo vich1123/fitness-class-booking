@@ -6,42 +6,49 @@ import cors from "cors";
 // Load environment variables
 dotenv.config();
 
+// Debug logs to verify `.env` variables
+console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
+
 const app = express();
 
-// Allowed Origins - Netlify and Localhost
+// Allow All Origins or Specific Allowed Origins
 const allowedOrigins = [
-    process.env.FRONTEND_URL, 
-    "http://localhost:3000" 
+    process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
+    "http://localhost:3000"
 ];
 
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
+    origin: allowedOrigins, 
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.options("*", cors()); // Pre-flight requests
+// Ensure preflight requests are handled properly
+app.options("*", cors()); 
 
 // Middleware
 app.use(express.json());
 
-// MongoDB Connection
+// Ensure CORS headers are added to all responses
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    next();
+});
+
+// MongoDB Connection with Error Handling
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
-        console.log("Connected to MongoDB");
+        console.log(" Connected to MongoDB");
     } catch (error) {
-        console.error("MongoDB Connection Error:", error.message);
+        console.error(" MongoDB Connection Error:", error.message);
         process.exit(1);
     }
 };
@@ -56,6 +63,7 @@ import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
+// Apply API Routes
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/users", userRoutes);
@@ -64,14 +72,15 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
 
+// Root API Endpoint
 app.get("/", (req, res) => {
     res.send("Fitness Class Booking API is running...");
 });
 
-// Error Handling
+// Global Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error("Error:", err.message);
-    res.status(500).json({ message: err.message || "Internal Server Error" });
+    console.error(" Error:", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
 });
 
 // Start Server
