@@ -13,14 +13,20 @@ console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
 // Create Express App
 const app = express();
 
-// CORS Setup - Allow Netlify & Localhost
+// CORS Setup - Allow Deployed Frontend & Localhost
 const allowedOrigins = [
     process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
     "http://localhost:3000"
 ];
 
 app.use(cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -48,9 +54,9 @@ const connectDB = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
-        console.log(" Connected to MongoDB successfully.");
+        console.log("Connected to MongoDB successfully.");
     } catch (error) {
-        console.error(" MongoDB Connection Error:", error.message);
+        console.error("MongoDB Connection Error:", error.message);
         process.exit(1);
     }
 };
@@ -82,17 +88,17 @@ app.use((req, res, next) => {
 
 // Root Route
 app.get("/", (req, res) => {
-    res.send(" Fitness Class Booking API is running...");
+    res.send("Fitness Class Booking API is running...");
 });
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
-    console.error(" Server Error:", err.message);
+    console.error("Server Error:", err.message);
     res.status(500).json({ message: "Internal Server Error" });
 });
 
 // Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log(` Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

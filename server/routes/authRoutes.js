@@ -8,10 +8,20 @@ dotenv.config();
 
 const router = express.Router();
 
+// Debugging log for API request tracking
+router.use((req, res, next) => {
+    console.log(` Auth API Request: ${req.method} ${req.path}`);
+    next();
+});
+
 // Register Route
 router.post("/register", async (req, res) => {
     try {
         const { name, email, password } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
 
         let user = await User.findOne({ email });
         if (user) {
@@ -26,7 +36,7 @@ router.post("/register", async (req, res) => {
 
         res.status(201).json({ token, user });
     } catch (error) {
-        console.error("Registration Error:", error.message);
+        console.error(" Registration Error:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
@@ -35,6 +45,10 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
 
         const user = await User.findOne({ email });
         if (!user) {
