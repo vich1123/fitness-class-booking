@@ -2,50 +2,38 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import connectDB from "./config/db.js";
 
-// Load environment variables
 dotenv.config();
-
-// Debug logs to verify `.env` variables
-console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
 
 const app = express();
 
-// Fix CORS Policy
+// Debugging environment variables
+console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
+
+// Connect to MongoDB
+connectDB();
+
+// CORS Configuration
 const allowedOrigins = [
     process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
     "http://localhost:3000"
 ];
 
 app.use(cors({
-    origin: "*",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.options("*", cors()); // Enable pre-flight requests
+app.options("*", cors());
 
 // Middleware
 app.use(express.json());
 
-// MongoDB Connection with Error Handling
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
-        console.log("Connected to MongoDB");
-    } catch (error) {
-        console.error("MongoDB Connection Error:", error.message);
-        process.exit(1);
-    }
-};
-connectDB();
-
-// API Routes
+// Import API Routes
 import trainerRoutes from "./routes/trainerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import authRoutes from "./routes/authRoutes.js";

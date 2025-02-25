@@ -10,7 +10,7 @@ const Classes = ({ userId }) => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get("http://localhost:10000/api/classes");
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/classes`);
         setClasses(response.data);
       } catch (err) {
         setError("Failed to fetch classes");
@@ -22,9 +22,7 @@ const Classes = ({ userId }) => {
     const fetchRecommendedClasses = async () => {
       try {
         if (userId) {
-          const response = await axios.get(
-            `http://localhost:10000/api/classes/recommendations/${userId}`
-          );
+          const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/classes/recommendations/${userId}`);
           setRecommendedClasses(response.data);
         }
       } catch (error) {
@@ -56,74 +54,19 @@ const Classes = ({ userId }) => {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">
-        Available Classes
-      </h1>
+      <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">Available Classes</h1>
       <div className="grid md:grid-cols-2 sm:grid-cols-1 gap-6">
         {classes.map((classItem) => (
-          <div
-            key={classItem._id}
-            className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
-          >
+          <div key={classItem._id} className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">{classItem.name}</h2>
-            <p className="text-gray-600">
-              <strong>Trainer:</strong> {classItem.trainer?.name || "N/A"}
-            </p>
-            <p className="text-gray-600">
-              <strong>Schedule:</strong> {classItem.schedule}
-            </p>
-            <p className="text-gray-600">
-              <strong>Capacity:</strong> {classItem.capacity}
-            </p>
-            <p className="text-gray-600">
-              <strong>Price:</strong> ${classItem.price}
-            </p>
-            <button
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
-              onClick={() => handleBookClass(classItem._id)}
-            >
-              Book Class
-            </button>
+            <p className="text-gray-600"><strong>Trainer:</strong> {classItem.trainer?.name || "N/A"}</p>
+            <p className="text-gray-600"><strong>Schedule:</strong> {classItem.schedule}</p>
+            <p className="text-gray-600"><strong>Capacity:</strong> {classItem.capacity}</p>
+            <p className="text-gray-600"><strong>Price:</strong> ${classItem.price}</p>
+            <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all" onClick={() => handleBookClass(classItem._id)}>Book Class</button>
           </div>
         ))}
       </div>
-
-      {/* Recommended Classes Section */}
-      {userId && recommendedClasses.length > 0 && (
-        <>
-          <h2 className="text-3xl font-bold text-center text-green-700 mt-6 mb-6">
-            Recommended Classes
-          </h2>
-          <div className="grid md:grid-cols-2 sm:grid-cols-1 gap-6">
-            {recommendedClasses.map((classItem) => (
-              <div
-                key={classItem._id}
-                className="bg-green-100 shadow-md rounded-lg p-6 border border-gray-300"
-              >
-                <h2 className="text-xl font-semibold text-gray-900">{classItem.name}</h2>
-                <p className="text-gray-600">
-                  <strong>Trainer:</strong> {classItem.trainer?.name || "N/A"}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Schedule:</strong> {classItem.schedule}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Capacity:</strong> {classItem.capacity}
-                </p>
-                <p className="text-gray-600">
-                  <strong>Price:</strong> ${classItem.price}
-                </p>
-                <button
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
-                  onClick={() => handleBookClass(classItem._id)}
-                >
-                  Book Class
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
     </div>
   );
 };

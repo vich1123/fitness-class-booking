@@ -16,10 +16,10 @@ const Home = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get('http://localhost:10000/api/classes');
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/classes`);
         setClasses(response.data);
       } catch (error) {
-        console.error("❌ Error fetching classes:", error);
+        console.error("Error fetching classes:", error);
         setError("Failed to load classes. Please try again later.");
       } finally {
         setLoading(false);
