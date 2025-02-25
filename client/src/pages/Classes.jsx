@@ -61,10 +61,7 @@ const Classes = ({ userId }) => {
       </h1>
       <div className="grid md:grid-cols-2 sm:grid-cols-1 gap-6">
         {classes.map((classItem) => (
-          <div
-            key={classItem._id}
-            className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
-          >
+          <div key={classItem._id} className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">{classItem.name}</h2>
             <p className="text-gray-600"><strong>Trainer:</strong> {classItem.trainer?.name || "N/A"}</p>
             <p className="text-gray-600"><strong>Schedule:</strong> {classItem.schedule}</p>

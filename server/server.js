@@ -6,13 +6,13 @@ import cors from "cors";
 // Load environment variables
 dotenv.config();
 
-const app = express();
-
-// Debugging Logs for ENV Variables
+// Debug logs to verify `.env` variables
 console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
 console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
 
-// CORS Setup: Allow only specific origins
+const app = express();
+
+// Fix CORS Policy
 const allowedOrigins = [
     process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app",
     "http://localhost:3000"
@@ -30,7 +30,7 @@ app.options("*", cors()); // Enable pre-flight requests
 // Middleware
 app.use(express.json());
 
-// MongoDB Connection
+// MongoDB Connection with Error Handling
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
