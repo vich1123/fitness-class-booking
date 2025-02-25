@@ -8,15 +8,14 @@ dotenv.config();
 
 const app = express();
 
-// Define allowed origins for CORS
+// Allowed Origins - Netlify and Localhost
 const allowedOrigins = [
-    process.env.FRONTEND_URL,  // Netlify frontend URL
-    "http://localhost:3000",   // Local development
+    process.env.FRONTEND_URL, 
+    "http://localhost:3000" 
 ];
 
-// CORS Middleware
 app.use(cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -24,11 +23,11 @@ app.use(cors({
         }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.options("*", cors()); // Enable pre-flight requests
+app.options("*", cors()); // Pre-flight requests
 
 // Middleware
 app.use(express.json());
@@ -38,7 +37,7 @@ const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
-            useUnifiedTopology: true,
+            useUnifiedTopology: true
         });
         console.log("Connected to MongoDB");
     } catch (error) {
@@ -48,7 +47,7 @@ const connectDB = async () => {
 };
 connectDB();
 
-// Import Routes
+// API Routes
 import trainerRoutes from "./routes/trainerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -57,7 +56,6 @@ import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-// Apply API Routes
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/users", userRoutes);
@@ -66,15 +64,14 @@ app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// Root API Endpoint
 app.get("/", (req, res) => {
     res.send("Fitness Class Booking API is running...");
 });
 
-// Global Error Handling Middleware
+// Error Handling
 app.use((err, req, res, next) => {
     console.error("Error:", err.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: err.message || "Internal Server Error" });
 });
 
 // Start Server

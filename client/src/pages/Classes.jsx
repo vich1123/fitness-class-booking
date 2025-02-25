@@ -12,7 +12,11 @@ const Classes = ({ userId }) => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/classes`);
+        const response = await axios.get(`${API_URL}/api/classes`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         setClasses(response.data);
       } catch (err) {
         setError("Failed to fetch classes");
@@ -66,10 +70,18 @@ const Classes = ({ userId }) => {
             className="bg-white shadow-md rounded-lg p-6 border border-gray-200"
           >
             <h2 className="text-xl font-semibold text-gray-900">{classItem.name}</h2>
-            <p className="text-gray-600"><strong>Trainer:</strong> {classItem.trainer?.name || "N/A"}</p>
-            <p className="text-gray-600"><strong>Schedule:</strong> {classItem.schedule}</p>
-            <p className="text-gray-600"><strong>Capacity:</strong> {classItem.capacity}</p>
-            <p className="text-gray-600"><strong>Price:</strong> ${classItem.price}</p>
+            <p className="text-gray-600">
+              <strong>Trainer:</strong> {classItem.trainer?.name || "N/A"}
+            </p>
+            <p className="text-gray-600">
+              <strong>Schedule:</strong> {classItem.schedule}
+            </p>
+            <p className="text-gray-600">
+              <strong>Capacity:</strong> {classItem.capacity}
+            </p>
+            <p className="text-gray-600">
+              <strong>Price:</strong> ${classItem.price}
+            </p>
             <button
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
               onClick={() => handleBookClass(classItem._id)}

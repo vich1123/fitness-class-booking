@@ -34,7 +34,6 @@ const Dashboard = () => {
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
 
-      {/* Added View Booking History and Payment History Links */}
       <div className="mb-4">
         <Link to="/booking-history" className="text-blue-500 hover:underline">
           View Booking History
@@ -46,7 +45,6 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      {/* Notifications Section */}
       <h3 className="text-xl font-bold mt-4">Notifications</h3>
       {notifications.length === 0 ? (
         <p className="text-gray-500">No notifications available</p>
