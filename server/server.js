@@ -15,38 +15,30 @@ const app = express();
 
 // CORS Setup - Allow Deployed Frontend & Localhost
 const allowedOrigins = [
-    "https://fitnessbookingonline.netlify.app", // Deployed Frontend
+    process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app", // Deployed Frontend
     "http://localhost:3000" // Local Development
 ];
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    if (req.method === "OPTIONS") {
+        return res.status(200).end();
+    }
+    next();
+});
 
 // Ensure preflight requests are handled correctly
 app.options("*", cors());
 
 // Middleware
 app.use(express.json());
-
-// Explicitly handle CORS headers
-app.use((req, res, next) => {
-    const origin = allowedOrigins.includes(req.headers.origin) ? req.headers.origin : "https://fitnessbookingonline.netlify.app";
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-    next();
-});
 
 // MongoDB Connection with Debugging
 const connectDB = async () => {
