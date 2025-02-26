@@ -15,10 +15,30 @@ const app = express();
 
 // CORS Setup - Allow Deployed Frontend & Localhost
 const allowedOrigins = [
-    process.env.FRONTEND_URL || "https://fitnessbookingonline.netlify.app", // Deployed Frontend
+    process.env.FRONTEND_URL || "https://fitnessbooking.netlify.app", // Deployed Frontend
     "http://localhost:3000" // Local Development
 ];
 
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// Handle preflight requests manually
+app.options("*", cors());
+
+// Middleware
+app.use(express.json());
+
+// Explicitly handle CORS headers for all routes
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
@@ -33,12 +53,6 @@ app.use((req, res, next) => {
     }
     next();
 });
-
-// Ensure preflight requests are handled correctly
-app.options("*", cors());
-
-// Middleware
-app.use(express.json());
 
 // MongoDB Connection with Debugging
 const connectDB = async () => {
@@ -72,12 +86,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
-
-// **EXPLICITLY LOG EACH REQUEST**
-app.use((req, res, next) => {
-    console.log(`API Request - Method: ${req.method}, Path: ${req.path}`);
-    next();
-});
 
 // Root Route
 app.get("/", (req, res) => {
