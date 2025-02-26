@@ -15,8 +15,8 @@ const app = express();
 
 // CORS Setup - Allow Deployed Frontend & Localhost
 const allowedOrigins = [
-    process.env.FRONTEND_URL || "https://fitnessbooking.netlify.app", // Deployed Frontend
-    "http://localhost:3000" // Local Development
+    process.env.FRONTEND_URL || "https://fitnessbooking.netlify.app",
+    "http://localhost:3000"
 ];
 
 app.use(cors({
