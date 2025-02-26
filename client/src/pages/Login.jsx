@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const API_URL = process.env.REACT_APP_BACKEND_URL
-  ? `${process.env.REACT_APP_BACKEND_URL}/api/auth/login`
-  : "https://fitness-class-booking.onrender.com/api/auth/login";
+const API_URL = "/api/auth/login"; // Using Netlify proxy
 
 const Login = () => {
   const navigate = useNavigate();
