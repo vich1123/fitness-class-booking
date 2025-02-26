@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
+const API_URL = "https://fitness-class-booking.onrender.com/api/bookings"; 
+
 const BookClass = () => {
   const { classId } = useParams();
   const [error, setError] = useState("");
@@ -11,7 +13,7 @@ const BookClass = () => {
     try {
       console.log("Attempting to book class:", classId);
 
-      const response = await axios.post("http://localhost:10000/api/bookings", {  // ✅ FIXED: Removed extra "/api/"
+      const response = await axios.post(API_URL, {
         userId: "65b4b9f9b8bf7c305a123456", // Replace with actual user ID
         classId,
         date: new Date().toISOString(),

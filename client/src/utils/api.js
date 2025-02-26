@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Backend API base URL (Update this with your deployed backend link)
 const API_BASE_URL = "https://fitness-class-booking.onrender.com/api";
 
 // Create an Axios instance
@@ -98,5 +97,4 @@ export const getClassById = async (id) => {
   }
 };
 
-// Export API instance as default
 export default api;

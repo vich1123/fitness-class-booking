@@ -17,7 +17,7 @@ const PaymentHistory = () => {
 
     const fetchPayments = async () => {
       try {
-        const response = await axios.get(`http://localhost:10000/api/payments/history/${userId}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/trainers`);
         setPayments(response.data);
       } catch (error) {
         console.error("Error fetching payment history:", error);

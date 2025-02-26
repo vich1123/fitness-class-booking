@@ -8,7 +8,7 @@ const Trainers = () => {
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
-        const response = await axios.get("http://localhost:10000/api/trainers");
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/trainers`);
         setTrainers(response.data);
       } catch (error) {
         console.error("Error fetching trainers:", error);

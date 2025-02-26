@@ -17,7 +17,7 @@ const BookingHistory = () => {
 
     const fetchBookings = async () => {
       try {
-        const response = await axios.get(`http://localhost:10000/api/bookings/user/${userId}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/trainers`);
         setBookings(response.data);
       } catch (error) {
         console.error("Error fetching booking history:", error);

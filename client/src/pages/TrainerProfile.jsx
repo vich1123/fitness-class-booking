@@ -12,7 +12,7 @@ const TrainerProfile = () => {
   useEffect(() => {
     const fetchTrainer = async () => {
       try {
-        const response = await axios.get(`http://localhost:10000/api/trainers/${id}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/trainers`);
         setTrainer(response.data);
       } catch (error) {
         console.error("Error fetching trainer details", error);
