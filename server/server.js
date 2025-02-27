@@ -7,26 +7,13 @@ dotenv.config();
 
 const app = express();
 
-// CORS Setup - Allow frontend (Netlify) to access backend (Render)
+// Allowed frontend origins
 const allowedOrigins = [
-    process.env.FRONTEND_URL || "https://fitnessbooking.netlify.app",
+    "https://fitnessbooking.netlify.app",
     "http://localhost:3000"
 ];
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-// Handle CORS Preflight Requests Properly
+// Preflight (OPTIONS) Handling - Must Come Before Other Middleware
 app.options("*", (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
@@ -35,9 +22,23 @@ app.options("*", (req, res) => {
     return res.status(200).end();
 });
 
+// CORS Middleware - Runs Before Routes
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("CORS not allowed for this origin."));
+        }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 
-// MongoDB Connection with Debugging
+// MongoDB Connection
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
@@ -52,6 +53,12 @@ const connectDB = async () => {
 };
 connectDB();
 
+// Debugging Route to Verify API is Running
+app.get("/api/test", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.json({ message: "API is running fine." });
+});
+
 // Import Routes
 import trainerRoutes from "./routes/trainerRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
@@ -60,11 +67,6 @@ import userRoutes from "./routes/userRoutes.js";
 import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
-
-// Debugging Route to Verify API is Running
-app.get("/api/test", (req, res) => {
-    res.json({ message: "API is running fine." });
-});
 
 // API Routes
 app.use("/api/trainers", trainerRoutes);
@@ -77,6 +79,7 @@ app.use("/api/payments", paymentRoutes);
 
 // Root Route
 app.get("/", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.send("Fitness Class Booking API is running.");
 });
 
