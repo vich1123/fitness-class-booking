@@ -3,17 +3,11 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 
-// Load environment variables
 dotenv.config();
 
-// Debugging logs to verify environment variables
-console.log("MONGO_URI:", process.env.MONGO_URI ? "Loaded" : "Not Found");
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
-
-// Create Express App
 const app = express();
 
-// CORS Setup - Allow frontend connection
+// CORS Setup - Allow frontend (Netlify) to access backend (Render)
 const allowedOrigins = [
     process.env.FRONTEND_URL || "https://fitnessbooking.netlify.app",
     "http://localhost:3000"
@@ -32,24 +26,16 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// Middleware
-app.use(express.json());
-
-// Handle CORS headers for all routes
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    }
+// Handle CORS Preflight Requests Properly
+app.options("*", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.setHeader("Access-Control-Allow-Credentials", "true");
-
-    if (req.method === "OPTIONS") {
-        return res.status(200).end();
-    }
-    next();
+    return res.status(200).end();
 });
+
+app.use(express.json());
 
 // MongoDB Connection with Debugging
 const connectDB = async () => {
