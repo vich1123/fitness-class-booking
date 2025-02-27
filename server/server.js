@@ -13,7 +13,7 @@ console.log("FRONTEND_URL:", process.env.FRONTEND_URL ? "Loaded" : "Not Found");
 // Create Express App
 const app = express();
 
-// CORS Setup - Allow Deployed Frontend & Localhost
+// CORS Setup - Allow frontend connection
 const allowedOrigins = [
     process.env.FRONTEND_URL || "https://fitnessbooking.netlify.app",
     "http://localhost:3000"
@@ -32,13 +32,10 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// Handle preflight requests manually
-app.options("*", cors());
-
 // Middleware
 app.use(express.json());
 
-// Explicitly handle CORS headers for all routes
+// Handle CORS headers for all routes
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
@@ -78,6 +75,11 @@ import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
+// Debugging Route to Verify API is Running
+app.get("/api/test", (req, res) => {
+    res.json({ message: "API is running fine." });
+});
+
 // API Routes
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/bookings", bookingRoutes);
@@ -89,13 +91,13 @@ app.use("/api/payments", paymentRoutes);
 
 // Root Route
 app.get("/", (req, res) => {
-    res.send("Fitness Class Booking API is running...");
+    res.send("Fitness Class Booking API is running.");
 });
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
     console.error("Server Error:", err.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
 // Start Server

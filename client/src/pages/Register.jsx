@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = "/api/auth/register"; // Using Netlify proxy
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://fitness-class-booking.onrender.com/api/auth/register";
 
 const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -27,7 +27,7 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post(API_URL, form, {
+      const res = await axios.post(API_BASE_URL, form, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -39,7 +39,7 @@ const Register = () => {
       }
     } catch (err) {
       setError(
-        err.response?.data?.message || "Registration failed. Try again."
+        err.response?.data?.message || "Registration failed. Please try again."
       );
     } finally {
       setLoading(false);
