@@ -8,7 +8,7 @@ const TrainerProfile = () => {
   const { id } = useParams();
   const [trainer, setTrainer] = useState(null);
   const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState("");
   const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
@@ -27,6 +27,12 @@ const TrainerProfile = () => {
 
   const submitFeedback = async () => {
     try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        setSubmitError("User not logged in.");
+        return;
+      }
+
       if (!feedback.trim() || rating < 1 || rating > 5) {
         setSubmitError("Please enter valid feedback and a rating between 1 and 5.");
         return;
@@ -35,13 +41,13 @@ const TrainerProfile = () => {
       setSubmitError(null);
 
       await axios.post(`${API_URL}/api/trainers/${id}/feedback`, {
-        user: "67b58a48a696cd03b8a30289", // Replace this with actual logged-in user ID
+        user: userId,
         rating: Number(rating),
         comment: feedback,
       });
 
       setFeedback("");
-      setRating(0);
+      setRating("");
 
       // Refresh trainer details
       const response = await axios.get(`${API_URL}/api/trainers/${id}`);
@@ -51,49 +57,58 @@ const TrainerProfile = () => {
     }
   };
 
-  if (!trainer) return <p>Loading...</p>;
+  if (!trainer) return <p className="text-center text-gray-500">Loading...</p>;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>{trainer.name}</h2>
-      <p><strong>Specialization:</strong> {trainer.specialization}</p>
-      <p><strong>Experience:</strong> {trainer.experience} years</p>
+    <div className="container mx-auto max-w-2xl p-6 bg-white shadow-lg rounded-lg mt-10">
+      <h2 className="text-3xl font-bold text-center text-blue-700">{trainer.name}</h2>
+      <p className="text-center text-gray-600 text-lg">{trainer.specialization}</p>
+      <p className="text-center text-gray-500">
+        <strong>Experience:</strong> {trainer.experience} years
+      </p>
 
-      <h3>Feedback</h3>
-      {trainer.feedback && trainer.feedback.length > 0 ? (
-        <ul>
-          {trainer.feedback.map((fb, index) => (
-            <li key={index}>
-              <strong>Rating:</strong> {fb.rating} | <strong>Comment:</strong> {fb.comment}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No feedback yet.</p>
-      )}
+      {/* Feedback Section */}
+      <div className="mt-6">
+        <h3 className="text-2xl font-semibold text-gray-700 mb-3">Feedback</h3>
+        {trainer.feedback && trainer.feedback.length > 0 ? (
+          <ul className="space-y-3 bg-gray-100 p-4 rounded-lg">
+            {trainer.feedback.map((fb, index) => (
+              <li key={index} className="p-2 border-b border-gray-300 last:border-none">
+                <strong>Rating:</strong> {fb.rating} ⭐ | <strong>Comment:</strong> {fb.comment}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500">No feedback yet.</p>
+        )}
+      </div>
 
-      <h3>Submit Feedback</h3>
-      <input
-        type="text"
-        placeholder="Write your feedback..."
-        value={feedback}
-        onChange={(e) => setFeedback(e.target.value)}
-        style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-      />
-      <input
-        type="number"
-        placeholder="Rating (1-5)"
-        value={rating}
-        onChange={(e) => setRating(e.target.value)}
-        style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-      />
-      <button 
-        onClick={submitFeedback} 
-        style={{ padding: "10px", backgroundColor: "blue", color: "white", border: "none" }}
-      >
-        Submit Feedback
-      </button>
-      {submitError && <p style={{ color: "red" }}>{submitError}</p>}
+      {/* Feedback Submission */}
+      <div className="mt-6">
+        <h3 className="text-2xl font-semibold text-gray-700 mb-3">Submit Feedback</h3>
+        <textarea
+          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          placeholder="Write your feedback..."
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+        />
+        <input
+          type="number"
+          className="w-full p-3 border rounded-lg mt-2 focus:ring-2 focus:ring-blue-500"
+          placeholder="Rating (1-5)"
+          value={rating}
+          onChange={(e) => setRating(e.target.value)}
+          min="1"
+          max="5"
+        />
+        <button
+          onClick={submitFeedback}
+          className="mt-4 w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition"
+        >
+          Submit Feedback
+        </button>
+        {submitError && <p className="text-red-500 text-center mt-2">{submitError}</p>}
+      </div>
     </div>
   );
 };

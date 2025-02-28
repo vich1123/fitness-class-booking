@@ -55,14 +55,19 @@ export const deleteTrainer = async (req, res) => {
 // Submit feedback
 export const submitFeedback = async (req, res) => {
   try {
-    const { rating, comment } = req.body;
+    const { user, rating, comment } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(user)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
     const trainer = await Trainer.findById(req.params.id);
 
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
 
-    trainer.feedback.push({ user: req.body.user, rating, comment });
+    trainer.feedback.push({ user, rating, comment });
     await trainer.save();
 
     res.status(201).json({ message: "Feedback submitted successfully", trainer });

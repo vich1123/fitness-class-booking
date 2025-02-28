@@ -18,7 +18,7 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ message: "Invalid user or class ID" });
     }
 
-    const booking = await Booking.create({ user: userId, class: classId, date });
+    const booking = await Booking.create({ user: userId, class: classId, date, status: "confirmed" });
 
     await Notification.create({
       user: userId,
@@ -37,8 +37,8 @@ export const createBooking = async (req, res) => {
 export const getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find()
-      .populate("user") // Ensure the "user" reference is correctly populated
-      .populate("class");
+      .populate("user", "name email")
+      .populate("class", "name schedule");
 
     res.status(200).json(bookings);
   } catch (error) {
@@ -50,11 +50,14 @@ export const getAllBookings = async (req, res) => {
 // Get booking by ID
 export const getBookingById = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid booking ID" });
     }
 
-    const booking = await Booking.findById(req.params.id).populate("user").populate("class");
+    const booking = await Booking.findById(id).populate("user", "name email").populate("class", "name schedule");
+    
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
     res.status(200).json(booking);
@@ -67,8 +70,15 @@ export const getBookingById = async (req, res) => {
 // Get bookings by user
 export const getBookingsByUser = async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const bookings = await Booking.find({ user: userId }).populate("class");
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    console.log(`Fetching bookings for user: ${userId}`);
+
+    const bookings = await Booking.find({ user: userId }).populate("class", "name schedule");
 
     if (!bookings || bookings.length === 0) {
       return res.status(404).json({ message: "No bookings found for this user" });
@@ -76,6 +86,7 @@ export const getBookingsByUser = async (req, res) => {
 
     res.status(200).json(bookings);
   } catch (error) {
+    console.error("Error fetching user bookings:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
@@ -83,12 +94,16 @@ export const getBookingsByUser = async (req, res) => {
 // Cancel booking
 export const cancelBooking = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid booking ID" });
     }
 
-    const booking = await Booking.findByIdAndDelete(req.params.id);
+    const booking = await Booking.findById(id);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    await Booking.findByIdAndDelete(id);
 
     await Notification.create({
       user: booking.user,
@@ -106,13 +121,16 @@ export const cancelBooking = async (req, res) => {
 // Update booking status
 export const updateBookingStatus = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid booking ID" });
     }
 
     const booking = await Booking.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
+      id,
+      { status },
       { new: true }
     );
 

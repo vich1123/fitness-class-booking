@@ -1,26 +1,31 @@
-const Recommendation = require('../models/Recommendation');
-const Booking = require('../models/Booking');
-const Class = require('../models/Class');
+import Booking from "../models/Booking.js";
+import Class from "../models/Class.js";
+import mongoose from "mongoose";
 
-// Fetch class recommendations based on user preferences or history
-const getRecommendations = async (req, res) => {
-    const { userId } = req.params; // Assuming the user ID is provided
-
+export const getRecommendations = async (req, res) => {
     try {
-        // Get all bookings for the user
-        const bookings = await Booking.find({ user: userId }).populate('classId');
-        const recommendedClasses = [];
+        const { userId } = req.params;
 
-        // Logic to filter classes based on user history or preferences
-        for (const booking of bookings) {
-            const classData = await Class.find({ category: booking.classId.category }); // Example filtering by category
-            recommendedClasses.push(...classData);
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid or missing User ID" });
         }
+
+        // Find all user bookings
+        const bookings = await Booking.find({ user: userId }).populate("class");
+
+        if (!bookings.length) {
+            return res.status(200).json({ recommendations: [] });
+        }
+
+        // Extract unique categories from booked classes
+        const bookedCategories = [...new Set(bookings.map(b => b.class?.category).filter(Boolean))];
+
+        // Fetch recommended classes based on previously booked categories
+        const recommendedClasses = await Class.find({ category: { $in: bookedCategories } });
 
         res.status(200).json({ recommendations: recommendedClasses });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to fetch recommendations', error: error.message });
+        console.error("Error fetching recommendations:", error);
+        res.status(500).json({ message: "Failed to fetch recommendations", error: error.message });
     }
 };
-
-module.exports = { getRecommendations };

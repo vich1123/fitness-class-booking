@@ -12,6 +12,7 @@ const Home = () => {
   ];
 
   const [classes, setClasses] = useState([]);
+  const [recommendedClasses, setRecommendedClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,7 +28,20 @@ const Home = () => {
         setLoading(false);
       }
     };
+
+    const fetchRecommendations = async () => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) return;
+      try {
+        const response = await axios.get(`${API_URL}/api/recommendations/${userId}`);
+        setRecommendedClasses(response.data.recommendations);
+      } catch (error) {
+        console.error("Error fetching recommendations:", error);
+      }
+    };
+
     fetchClasses();
+    fetchRecommendations();
   }, []);
 
   return (
@@ -61,6 +75,19 @@ const Home = () => {
                 <ClassCard key={cls._id} classId={cls._id} {...cls} />
               ))
             )}
+          </div>
+        )}
+      </section>
+
+      <section className="py-8 px-4">
+        <h2 className="text-2xl font-semibold mb-4">Recommended for You</h2>
+        {recommendedClasses.length === 0 ? (
+          <p>No recommendations available.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {recommendedClasses.map(cls => (
+              <ClassCard key={cls._id} classId={cls._id} {...cls} />
+            ))}
           </div>
         )}
       </section>

@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
-const API_URL = "https://fitness-class-booking.onrender.com/api/auth/login"; 
+const API_URL = process.env.REACT_APP_BACKEND_URL || "https://fitness-class-booking.onrender.com";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,14 +26,28 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post(API_URL, { email, password });
+      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
 
       if (response.status === 200) {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/");
+        const { token, user } = response.data;
+
+        if (user && user._id && token) {
+
+          localStorage.setItem("token", token);
+          localStorage.setItem("userId", user._id);
+          localStorage.setItem("user", JSON.stringify(user));
+
+
+          login(user, token); 
+
+
+          navigate("/");
+        } else {
+          setError("Invalid response from server.");
+        }
       }
     } catch (err) {
+      console.error("Login Error:", err);
       setError(err.response?.data?.message || "Invalid email or password.");
     } finally {
       setLoading(false);

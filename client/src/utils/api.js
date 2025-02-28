@@ -70,7 +70,7 @@ export const createBooking = async (bookingData) => {
 // Function to get booking history
 export const getBookingHistory = async (userId) => {
   try {
-    const response = await api.get(`/bookings/history/${userId}`);
+    const response = await api.get(`/bookings/user/${userId}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Failed to fetch booking history" };
@@ -84,6 +84,16 @@ export const processPayment = async (paymentData) => {
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "Payment processing failed" };
+  }
+};
+
+// Function to get payment history
+export const getPaymentHistory = async (userId) => {
+  try {
+    const response = await api.get(`/payments/history/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: "Failed to fetch payment history" };
   }
 };
 

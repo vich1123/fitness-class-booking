@@ -1,8 +1,10 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const recommendationSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    recommendedClasses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Class' }],
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    recommendedClasses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Class" }],
 });
 
-module.exports = mongoose.model('Recommendation', recommendationSchema);
+const Recommendation = mongoose.model("Recommendation", recommendationSchema);
+
+export default Recommendation;

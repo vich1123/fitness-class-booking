@@ -1,42 +1,60 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
+
+const API_URL = process.env.REACT_APP_BACKEND_URL || "https://fitness-class-booking.onrender.com";
 
 const BookingHistory = () => {
+  const { userId, isAuthenticated } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
-  const [userId, setUserId] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    if (storedUserId) {
-      setUserId(storedUserId);
+    if (!isAuthenticated || !userId) {
+      setError("User not logged in.");
+      setLoading(false);
+      return;
     }
-  }, []);
-
-  useEffect(() => {
-    if (!userId) return;
 
     const fetchBookings = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/trainers`);
-        setBookings(response.data);
+        console.log("Fetching bookings for user:", userId);
+        const response = await axios.get(`${API_URL}/api/bookings/user/${userId}`);
+        
+        if (response.status === 200 && response.data.length > 0) {
+          setBookings(response.data);
+        } else {
+          setError("No bookings found.");
+        }
       } catch (error) {
+        setError("Failed to fetch booking history.");
         console.error("Error fetching booking history:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchBookings();
-  }, [userId]);
+  }, [userId, isAuthenticated]);
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Booking History</h2>
-      {bookings.length === 0 ? (
-        <p className="text-gray-500">No bookings found</p>
+    <div className="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
+      <h2 className="text-2xl font-bold text-center text-blue-700">Booking History</h2>
+
+      {loading ? (
+        <p className="text-center text-gray-500">Loading...</p>
+      ) : error ? (
+        <p className="text-red-500 text-center">{error}</p>
+      ) : bookings.length === 0 ? (
+        <p className="text-gray-500 text-center">No bookings found.</p>
       ) : (
-        <ul className="bg-white shadow-md rounded-lg p-4">
+        <ul className="bg-gray-100 p-4 rounded-lg space-y-3">
           {bookings.map((booking) => (
-            <li key={booking._id} className="p-2 border-b last:border-none">
-              Class: {booking.class.name} | Date: {new Date(booking.date).toLocaleDateString()}
+            <li key={booking._id} className="p-3 border-b border-gray-300 last:border-none">
+              <strong>Class:</strong> {booking.class?.name || "N/A"} <br />
+              <strong>Date:</strong> {new Date(booking.createdAt).toLocaleDateString()} <br />
+              <strong>Status:</strong> {booking.status}
             </li>
           ))}
         </ul>

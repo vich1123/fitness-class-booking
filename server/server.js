@@ -13,7 +13,7 @@ const allowedOrigins = [
     "http://localhost:3000"
 ];
 
-// Preflight (OPTIONS) Handling - Must Come Before Other Middleware
+// Preflight (OPTIONS) Handling
 app.options("*", (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
@@ -22,7 +22,7 @@ app.options("*", (req, res) => {
     return res.status(200).end();
 });
 
-// CORS Middleware - Runs Before Routes
+// CORS Middleware
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -53,7 +53,7 @@ const connectDB = async () => {
 };
 connectDB();
 
-// Debugging Route to Verify API is Running
+// Debugging Route
 app.get("/api/test", (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.json({ message: "API is running fine." });
@@ -67,8 +67,9 @@ import userRoutes from "./routes/userRoutes.js";
 import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import recommendationRoutes from "./routes/recommendationRoutes.js"; 
 
-// API Routes
+//Add recommendation route properly
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/users", userRoutes);
@@ -76,6 +77,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/recommendations", recommendationRoutes); 
 
 // Root Route
 app.get("/", (req, res) => {
