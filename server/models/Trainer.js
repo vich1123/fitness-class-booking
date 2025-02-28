@@ -12,7 +12,7 @@ const trainerSchema = new mongoose.Schema({
   specialization: { type: String, required: true },
   experience: { type: Number, required: true },
   bio: { type: String },
-  feedback: [feedbackSchema],
+  feedback: [feedbackSchema], 
 });
 
 const Trainer = mongoose.model("Trainer", trainerSchema);
