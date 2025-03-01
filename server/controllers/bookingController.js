@@ -9,7 +9,7 @@ export const createBooking = async (req, res) => {
     console.log("Received booking request:", req.body);
 
     const { userId, classId, date } = req.body;
-    
+
     if (!userId || !classId || !date) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -57,7 +57,7 @@ export const getBookingById = async (req, res) => {
     }
 
     const booking = await Booking.findById(id).populate("user", "name email").populate("class", "name schedule");
-    
+
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
     res.status(200).json(booking);
@@ -79,10 +79,6 @@ export const getBookingsByUser = async (req, res) => {
     console.log(`Fetching bookings for user: ${userId}`);
 
     const bookings = await Booking.find({ user: userId }).populate("class", "name schedule");
-
-    if (!bookings || bookings.length === 0) {
-      return res.status(404).json({ message: "No bookings found for this user" });
-    }
 
     res.status(200).json(bookings);
   } catch (error) {

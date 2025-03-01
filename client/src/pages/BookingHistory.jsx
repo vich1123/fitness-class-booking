@@ -21,9 +21,10 @@ const BookingHistory = () => {
       try {
         console.log("Fetching bookings for user:", userId);
         const response = await axios.get(`${API_URL}/api/bookings/user/${userId}`);
-        
-        if (response.status === 200 && response.data.length > 0) {
-          setBookings(response.data);
+
+        if (response.status === 200) {
+          setBookings(response.data); 
+          setError(""); 
         } else {
           setError("No bookings found.");
         }
