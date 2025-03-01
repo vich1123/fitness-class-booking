@@ -22,6 +22,7 @@ const BookingHistory = () => {
       const response = await axios.get(`${API_URL}/api/bookings/user/${userId}`);
 
       if (response.status === 200 && Array.isArray(response.data)) {
+        console.log("Bookings received:", response.data);
         setBookings(response.data);
         setError(""); // Clear error if successful
       } else {

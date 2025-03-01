@@ -19,18 +19,20 @@ export const createBooking = async (req, res) => {
     }
 
     const booking = await Booking.create({
-      user: userId,
-      class: classId,
+      user: new mongoose.Types.ObjectId(userId),
+      class: new mongoose.Types.ObjectId(classId),
       date,
       status: "confirmed",
       createdAt: new Date(),
     });
 
     await Notification.create({
-      user: userId,
+      user: new mongoose.Types.ObjectId(userId),
       message: `Your booking for class ID ${classId} has been confirmed.`,
       type: "booking",
     });
+
+    console.log("Booking created:", booking);
 
     res.status(201).json({ message: "Booking successful", booking });
   } catch (error) {
@@ -47,6 +49,7 @@ export const getAllBookings = async (req, res) => {
       .populate("class", "name schedule trainer price")
       .sort({ createdAt: -1 });
 
+    console.log("All bookings fetched:", bookings.length);
     res.status(200).json(bookings);
   } catch (error) {
     console.error("Error fetching bookings:", error);
@@ -67,8 +70,11 @@ export const getBookingById = async (req, res) => {
       .populate("user", "name email")
       .populate("class", "name schedule trainer price");
 
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
 
+    console.log("Booking found:", booking);
     res.status(200).json(booking);
   } catch (error) {
     console.error("Error fetching booking by ID:", error);
@@ -82,18 +88,17 @@ export const getBookingsByUser = async (req, res) => {
     const { userId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error("Invalid User ID:", userId);
       return res.status(400).json({ message: "Invalid user ID" });
     }
 
     console.log(`Fetching bookings for user: ${userId}`);
 
-    const bookings = await Booking.find({ user: userId })
+    const bookings = await Booking.find({ user: new mongoose.Types.ObjectId(userId) })
       .populate("class", "name schedule trainer price")
       .sort({ createdAt: -1 });
 
-    if (!bookings.length) {
-      return res.status(200).json([]); // Return empty array instead of error
-    }
+    console.log("Bookings found:", bookings.length);
 
     res.status(200).json(bookings);
   } catch (error) {
@@ -112,7 +117,9 @@ export const cancelBooking = async (req, res) => {
     }
 
     const booking = await Booking.findById(id);
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
 
     booking.status = "canceled"; // Update status instead of deleting
     await booking.save();
@@ -123,6 +130,7 @@ export const cancelBooking = async (req, res) => {
       type: "cancellation",
     });
 
+    console.log("Booking canceled:", booking);
     res.status(200).json({ message: "Booking canceled successfully", booking });
   } catch (error) {
     console.error("Error canceling booking:", error);
@@ -146,8 +154,11 @@ export const updateBookingStatus = async (req, res) => {
       { new: true }
     );
 
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
 
+    console.log("Booking status updated:", booking);
     res.status(200).json(booking);
   } catch (error) {
     console.error("Error updating booking status:", error);
