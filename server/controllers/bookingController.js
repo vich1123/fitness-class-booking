@@ -18,7 +18,13 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ message: "Invalid user or class ID" });
     }
 
-    const booking = await Booking.create({ user: userId, class: classId, date, status: "confirmed" });
+    const booking = await Booking.create({
+      user: userId,
+      class: classId,
+      date,
+      status: "confirmed",
+      createdAt: new Date(),
+    });
 
     await Notification.create({
       user: userId,
@@ -38,7 +44,8 @@ export const getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find()
       .populate("user", "name email")
-      .populate("class", "name schedule");
+      .populate("class", "name schedule trainer price")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(bookings);
   } catch (error) {
@@ -56,7 +63,9 @@ export const getBookingById = async (req, res) => {
       return res.status(400).json({ message: "Invalid booking ID" });
     }
 
-    const booking = await Booking.findById(id).populate("user", "name email").populate("class", "name schedule");
+    const booking = await Booking.findById(id)
+      .populate("user", "name email")
+      .populate("class", "name schedule trainer price");
 
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
@@ -78,7 +87,9 @@ export const getBookingsByUser = async (req, res) => {
 
     console.log(`Fetching bookings for user: ${userId}`);
 
-    const bookings = await Booking.find({ user: userId }).populate("class", "name schedule");
+    const bookings = await Booking.find({ user: userId })
+      .populate("class", "name schedule trainer price")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(bookings);
   } catch (error) {

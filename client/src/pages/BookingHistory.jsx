@@ -10,34 +10,34 @@ const BookingHistory = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!isAuthenticated || !userId) {
-      setError("User not logged in.");
-      setLoading(false);
-      return;
-    }
-
-    const fetchBookings = async () => {
-      try {
-        console.log("Fetching bookings for user:", userId);
-        const response = await axios.get(`${API_URL}/api/bookings/user/${userId}`);
-
-        if (response.status === 200) {
-          setBookings(response.data); 
-          setError(""); 
-        } else {
-          setError("No bookings found.");
-        }
-      } catch (error) {
-        setError("Failed to fetch booking history.");
-        console.error("Error fetching booking history:", error);
-      } finally {
+  const fetchBookings = async () => {
+    try {
+      if (!isAuthenticated || !userId) {
+        setError("User not logged in.");
         setLoading(false);
+        return;
       }
-    };
 
+      console.log("Fetching bookings for user:", userId);
+      const response = await axios.get(`${API_URL}/api/bookings/user/${userId}`);
+
+      if (response.status === 200) {
+        setBookings(response.data);
+        setError("");
+      } else {
+        setError("No bookings found.");
+      }
+    } catch (error) {
+      setError("Failed to fetch booking history.");
+      console.error("Error fetching booking history:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchBookings();
-  }, [userId, isAuthenticated]);
+  }, [userId, isAuthenticated]); // Ensure it updates when userId changes
 
   return (
     <div className="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
@@ -54,7 +54,9 @@ const BookingHistory = () => {
           {bookings.map((booking) => (
             <li key={booking._id} className="p-3 border-b border-gray-300 last:border-none">
               <strong>Class:</strong> {booking.class?.name || "N/A"} <br />
-              <strong>Date:</strong> {new Date(booking.createdAt).toLocaleDateString()} <br />
+              <strong>Trainer:</strong> {booking.class?.trainer || "N/A"} <br />
+              <strong>Date:</strong> {new Date(booking.date).toLocaleDateString()} <br />
+              <strong>Price:</strong> ${booking.class?.price || "N/A"} <br />
               <strong>Status:</strong> {booking.status}
             </li>
           ))}
