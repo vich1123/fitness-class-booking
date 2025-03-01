@@ -21,9 +21,9 @@ const BookingHistory = () => {
       console.log("Fetching bookings for user:", userId);
       const response = await axios.get(`${API_URL}/api/bookings/user/${userId}`);
 
-      if (response.status === 200) {
+      if (response.status === 200 && Array.isArray(response.data)) {
         setBookings(response.data);
-        setError("");
+        setError(""); // Clear error if successful
       } else {
         setError("No bookings found.");
       }
@@ -37,7 +37,7 @@ const BookingHistory = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, [userId, isAuthenticated]); // Ensure it updates when userId changes
+  }, [userId, isAuthenticated]);
 
   return (
     <div className="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">

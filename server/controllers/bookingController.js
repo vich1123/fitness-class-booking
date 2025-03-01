@@ -91,6 +91,10 @@ export const getBookingsByUser = async (req, res) => {
       .populate("class", "name schedule trainer price")
       .sort({ createdAt: -1 });
 
+    if (!bookings.length) {
+      return res.status(200).json([]); // Return empty array instead of error
+    }
+
     res.status(200).json(bookings);
   } catch (error) {
     console.error("Error fetching user bookings:", error);
@@ -98,7 +102,7 @@ export const getBookingsByUser = async (req, res) => {
   }
 };
 
-// Cancel booking
+// Cancel booking (Change status to "canceled" instead of deleting)
 export const cancelBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,15 +114,16 @@ export const cancelBooking = async (req, res) => {
     const booking = await Booking.findById(id);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-    await Booking.findByIdAndDelete(id);
+    booking.status = "canceled"; // Update status instead of deleting
+    await booking.save();
 
     await Notification.create({
       user: booking.user,
-      message: `Your booking for class ID ${booking.class} has been cancelled.`,
+      message: `Your booking for class ID ${booking.class} has been canceled.`,
       type: "cancellation",
     });
 
-    res.status(200).json({ message: "Booking canceled successfully" });
+    res.status(200).json({ message: "Booking canceled successfully", booking });
   } catch (error) {
     console.error("Error canceling booking:", error);
     res.status(500).json({ message: "Failed to cancel booking", error: error.message });
