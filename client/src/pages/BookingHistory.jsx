@@ -18,13 +18,10 @@ const BookingHistory = () => {
         return;
       }
 
-      console.log("Fetching bookings for user:", userId);
       const response = await axios.get(`${API_URL}/api/bookings/user/${userId}`);
-
       if (response.status === 200 && Array.isArray(response.data)) {
-        console.log("Bookings received:", response.data);
         setBookings(response.data);
-        setError(""); // Clear error if successful
+        setError("");
       } else {
         setError("No bookings found.");
       }
@@ -40,29 +37,30 @@ const BookingHistory = () => {
     fetchBookings();
   }, [userId, isAuthenticated]);
 
-  return (
-    <div className="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
-      <h2 className="text-2xl font-bold text-center text-blue-700">Booking History</h2>
+  const handlePayment = async (bookingId, amount) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/payments/process`, {
+        userId,
+        bookingId,
+        amount,
+        paymentMethod: "Credit Card",
+      });
 
-      {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
-      ) : error ? (
-        <p className="text-red-500 text-center">{error}</p>
-      ) : bookings.length === 0 ? (
-        <p className="text-gray-500 text-center">No bookings found.</p>
-      ) : (
-        <ul className="bg-gray-100 p-4 rounded-lg space-y-3">
-          {bookings.map((booking) => (
-            <li key={booking._id} className="p-3 border-b border-gray-300 last:border-none">
-              <strong>Class:</strong> {booking.class?.name || "N/A"} <br />
-              <strong>Trainer:</strong> {booking.class?.trainer || "N/A"} <br />
-              <strong>Date:</strong> {new Date(booking.date).toLocaleDateString()} <br />
-              <strong>Price:</strong> ${booking.class?.price || "N/A"} <br />
-              <strong>Status:</strong> {booking.status}
-            </li>
-          ))}
-        </ul>
-      )}
+      if (response.status === 201) {
+        alert("Payment successful!");
+        fetchBookings();
+      }
+    } catch (error) {
+      alert("Payment failed. Please try again.");
+      console.error("Payment error:", error);
+    }
+  };
+
+  return (
+    <div>
+      {bookings.map((booking) => (
+        <button onClick={() => handlePayment(booking._id, booking.class?.price || 0)}>Pay Now</button>
+      ))}
     </div>
   );
 };

@@ -67,9 +67,9 @@ import userRoutes from "./routes/userRoutes.js";
 import notificationsRoutes from "./routes/notificationsRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
-import recommendationRoutes from "./routes/recommendationRoutes.js"; 
+import recommendationRoutes from "./routes/recommendationRoutes.js";
 
-//Add recommendation route properly
+// Include Payment Routes
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/users", userRoutes);
@@ -77,7 +77,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
-app.use("/api/recommendations", recommendationRoutes); 
+app.use("/api/recommendations", recommendationRoutes);
 
 // Root Route
 app.get("/", (req, res) => {
