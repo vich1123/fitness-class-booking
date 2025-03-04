@@ -7,13 +7,11 @@ dotenv.config();
 
 const app = express();
 
-// Allowed frontend origins
 const allowedOrigins = [
     "https://fitnessbooking.netlify.app",
     "http://localhost:3000"
 ];
 
-// Preflight (OPTIONS) Handling
 app.options("*", (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
@@ -22,7 +20,6 @@ app.options("*", (req, res) => {
     return res.status(200).end();
 });
 
-// CORS Middleware
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -38,7 +35,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// MongoDB Connection
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
@@ -53,9 +49,13 @@ const connectDB = async () => {
 };
 connectDB();
 
+mongoose.connection.on("disconnected", () => {
+    console.log("MongoDB disconnected! Reconnecting...");
+    connectDB();
+});
+
 // Debugging Route
 app.get("/api/test", (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.json({ message: "API is running fine." });
 });
 
@@ -69,7 +69,6 @@ import classRoutes from "./routes/classRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
 
-// Include Payment Routes
 app.use("/api/trainers", trainerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/users", userRoutes);
@@ -79,9 +78,7 @@ app.use("/api/classes", classRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 
-// Root Route
 app.get("/", (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.send("Fitness Class Booking API is running.");
 });
 
@@ -91,7 +88,6 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
-// Start Server
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

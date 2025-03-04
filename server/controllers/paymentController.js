@@ -1,51 +1,117 @@
 import Payment from "../models/Payment.js";
 import Booking from "../models/Booking.js";
-import User from "../models/User.js";
 import mongoose from "mongoose";
 
-// Process Payment
+/**
+ * Generate Payment Confirmation URL
+ */
+const generatePaymentURL = (paymentId) => {
+  return `https://fitness-class-booking.onrender.com/api/payments/confirm/${paymentId}`;
+};
+
+/**
+ * Process Payment (Step 1)
+ * Creates a new payment entry with "pending" status.
+ */
 export const processPayment = async (req, res) => {
   try {
-    const { userId, bookingId, amount, paymentMethod } = req.body;
+    let { userId, bookingId, amount, paymentMethod } = req.body;
 
+    console.log("Processing payment request:", { userId, bookingId, amount, paymentMethod });
+
+    // Validate userId and bookingId
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(bookingId)) {
-      return res.status(400).json({ message: "Invalid user or booking ID" });
+      console.error("Invalid user or booking ID:", { userId, bookingId });
+      return res.status(400).json({ message: "Invalid user or booking ID format" });
     }
 
+    // Check if the booking exists
     const booking = await Booking.findById(bookingId);
     if (!booking) {
+      console.error(`Booking not found: ${bookingId}`);
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    const payment = await Payment.create({
+    // Check if a payment already exists for this booking
+    let payment = await Payment.findOne({ booking: bookingId });
+
+    if (payment) {
+      if (payment.status === "completed") {
+        console.warn(`Payment already completed for booking: ${bookingId}`);
+        return res.status(400).json({ message: "Booking already paid" });
+      } else {
+        console.log(`Existing payment found for Booking ID: ${bookingId}, Payment ID: ${payment._id}`);
+        return res.status(200).json({
+          message: "Payment already initiated",
+          url: generatePaymentURL(payment._id),
+          payment
+        });
+      }
+    }
+
+    // Create a new payment entry with "pending" status
+    console.log("Creating a new payment entry.");
+    payment = await Payment.create({
       user: userId,
       booking: bookingId,
       amount,
       paymentMethod,
-      status: "completed",
+      status: "pending",
+      createdAt: new Date(),
     });
 
-    res.status(201).json({ message: "Payment processed successfully", payment });
+    const paymentURL = generatePaymentURL(payment._id);
+    res.status(201).json({ message: "Payment initiated", url: paymentURL, payment });
   } catch (error) {
     console.error("Error processing payment:", error);
     res.status(500).json({ message: "Payment processing failed", error: error.message });
   }
 };
 
-// Get Payment History by User
-export const getPaymentHistory = async (req, res) => {
+/**
+ * Confirm Payment (Step 2)
+ * Marks the payment as "completed" only after confirmation.
+ */
+export const confirmPayment = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { paymentId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "Invalid user ID" });
+    console.log(`Confirming payment with ID: ${paymentId}`);
+
+    // Validate payment ID
+    if (!mongoose.Types.ObjectId.isValid(paymentId)) {
+      console.error(`Invalid payment ID: ${paymentId}`);
+      return res.status(400).json({ message: "Invalid payment ID format" });
     }
 
-    const payments = await Payment.find({ user: userId }).populate("booking", "class date");
+    // Find the payment entry
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      console.error(`Payment not found: ${paymentId}`);
+      return res.status(404).json({ message: "Payment not found" });
+    }
 
-    res.status(200).json(payments);
+    // Check if payment is already confirmed
+    if (payment.status === "completed") {
+      console.warn(`Payment already confirmed: ${paymentId}`);
+      return res.status(400).json({ message: "Payment already confirmed" });
+    }
+
+    // Ensure only "pending" payments can be confirmed
+    if (payment.status === "pending") {
+      payment.status = "completed";
+      await payment.save();
+
+      // Mark the associated booking as confirmed
+      await Booking.findByIdAndUpdate(payment.booking, { status: "confirmed" });
+
+      console.log(`Payment confirmed successfully for Payment ID: ${paymentId}`);
+      return res.status(200).json({ message: "Payment successful", payment });
+    } else {
+      return res.status(400).json({ message: "Payment is not pending, cannot confirm" });
+    }
   } catch (error) {
-    console.error("Error fetching payment history:", error);
-    res.status(500).json({ message: "Failed to fetch payment history", error: error.message });
+    console.error("Error confirming payment:", error);
+    res.status(500).json({ message: "Payment confirmation failed", error: error.message });
   }
 };

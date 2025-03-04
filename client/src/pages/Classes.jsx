@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || "https://fitness-class-booking.onrender.com";
 
-const Classes = ({ userId }) => {
+const Classes = () => {
+  const { userId, isAuthenticated } = useContext(AuthContext);
   const [classes, setClasses] = useState([]);
-  const [recommendedClasses, setRecommendedClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -21,23 +22,45 @@ const Classes = ({ userId }) => {
       }
     };
 
-    const fetchRecommendedClasses = async () => {
-      try {
-        if (userId) {
-          const response = await axios.get(`${API_URL}/api/classes/recommendations/${userId}`);
-          setRecommendedClasses(response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching recommended classes:", error);
-      }
-    };
-
     fetchClasses();
-    fetchRecommendedClasses();
-  }, [userId]);
+  }, []);
 
-  const handleBookClass = (id) => {
-    alert(`Class with ID ${id} booked successfully!`);
+  const handleBookAndPay = async (classId, price) => {
+    if (!isAuthenticated || !userId) {
+      alert("You must be logged in to book a class.");
+      return;
+    }
+
+    try {
+      // Step 1: Create a Booking
+      const bookingResponse = await axios.post(`${API_URL}/api/bookings`, {
+        userId,
+        classId,
+        date: new Date().toISOString(),
+      });
+
+      if (bookingResponse.status === 201) {
+        const bookingId = bookingResponse.data.booking._id;
+        alert("Class booked successfully! Redirecting to payment...");
+
+        // Step 2: Process Payment
+        const paymentResponse = await axios.post(`${API_URL}/api/payments/process`, {
+          userId,
+          bookingId,
+          amount: price,
+          paymentMethod: "Card",
+        });
+
+        if (paymentResponse.data.url) {
+          window.location.href = paymentResponse.data.url; // Redirect to payment gateway
+        } else {
+          alert("Payment initiation failed!");
+        }
+      }
+    } catch (error) {
+      console.error("Booking error:", error.response?.data || error.message);
+      alert("Failed to book class. Please try again.");
+    }
   };
 
   return (
@@ -50,54 +73,22 @@ const Classes = ({ userId }) => {
         <p className="text-center text-red-500">{error}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-          {classes.length === 0 ? (
-            <p className="text-center col-span-3">No classes available.</p>
-          ) : (
-            classes.map((cls) => (
-              <div
-                key={cls._id}
-                className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition duration-300"
-              >
-                <h3 className="text-xl font-semibold text-gray-900">{cls.name}</h3>
-                <p className="text-gray-700"><strong>Trainer:</strong> {cls.trainer?.name || "N/A"}</p>
-                <p className="text-gray-600"><strong>Schedule:</strong> {cls.schedule}</p>
-                <p className="text-gray-600"><strong>Capacity:</strong> {cls.capacity}</p>
-                <p className="text-gray-900 font-bold mt-2">${cls.price}</p>
-                <button
-                  className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
-                  onClick={() => handleBookClass(cls._id)}
-                >
-                  Book Class
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+          {classes.map((cls) => (
+            <div key={cls._id} className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition duration-300">
+              <h3 className="text-xl font-semibold text-gray-900">{cls.name}</h3>
+              <p className="text-gray-700"><strong>Trainer:</strong> {cls.trainer?.name || "N/A"}</p>
+              <p className="text-gray-600"><strong>Schedule:</strong> {cls.schedule}</p>
+              <p className="text-gray-600"><strong>Capacity:</strong> {cls.capacity}</p>
+              <p className="text-gray-900 font-bold mt-2">${cls.price}</p>
 
-      {userId && recommendedClasses.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-center text-blue-700 mb-4">Recommended Classes</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-            {recommendedClasses.map((cls) => (
-              <div
-                key={cls._id}
-                className="bg-gray-100 shadow-md rounded-lg p-6 hover:shadow-lg transition duration-300"
+              <button
+                className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+                onClick={() => handleBookAndPay(cls._id, cls.price)}
               >
-                <h3 className="text-xl font-semibold text-gray-900">{cls.name}</h3>
-                <p className="text-gray-700"><strong>Trainer:</strong> {cls.trainer?.name || "N/A"}</p>
-                <p className="text-gray-600"><strong>Schedule:</strong> {cls.schedule}</p>
-                <p className="text-gray-600"><strong>Capacity:</strong> {cls.capacity}</p>
-                <p className="text-gray-900 font-bold mt-2">${cls.price}</p>
-                <button
-                  className="mt-4 w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition"
-                  onClick={() => handleBookClass(cls._id)}
-                >
-                  Book Class
-                </button>
-              </div>
-            ))}
-          </div>
+                Book & Pay
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>

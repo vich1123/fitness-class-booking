@@ -10,19 +10,26 @@ export const createBooking = async (req, res) => {
 
     const { userId, classId, date } = req.body;
 
+    // Validate input data
     if (!userId || !classId || !date) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(400).json({ message: "Missing required fields: userId, classId, or date." });
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(classId)) {
-      return res.status(400).json({ message: "Invalid user or class ID" });
+      return res.status(400).json({ message: "Invalid user or class ID." });
+    }
+
+    // Ensure the date is a valid Date object
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format." });
     }
 
     const booking = await Booking.create({
       user: new mongoose.Types.ObjectId(userId),
       class: new mongoose.Types.ObjectId(classId),
-      date,
-      status: "confirmed",
+      date: parsedDate, // Ensuring correct date format
+      status: "pending", // Changed to pending to allow payment
       createdAt: new Date(),
     });
 
@@ -33,7 +40,6 @@ export const createBooking = async (req, res) => {
     });
 
     console.log("Booking created:", booking);
-
     res.status(201).json({ message: "Booking successful", booking });
   } catch (error) {
     console.error("Error creating booking:", error);
@@ -99,7 +105,6 @@ export const getBookingsByUser = async (req, res) => {
       .sort({ createdAt: -1 });
 
     console.log("Bookings found:", bookings.length);
-
     res.status(200).json(bookings);
   } catch (error) {
     console.error("Error fetching user bookings:", error);
